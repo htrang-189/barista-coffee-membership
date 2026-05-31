@@ -1,0 +1,121 @@
+# Environment Setup Guide
+
+This guide walks you through setting up your local development environment for the **Barista Coffee Membership** project.  
+For: BA, Developer, Tester joining the project.
+
+---
+
+## Prerequisites
+
+- macOS computer
+- Internet connection
+- GitHub account — create for free at [github.com](https://github.com)
+- Anthropic/Claude account — create for free at [claude.ai](https://claude.ai)
+
+---
+
+## Step 1 — Check Node.js
+
+Node.js is required to run BMad (the project workflow framework).
+
+Open **Terminal** (Cmd + Space → type "Terminal" → Enter), then run:
+
+```bash
+node --version
+```
+
+**Expected output:** A version number such as `v22.x.x`
+
+- ✅ Version number appears → already installed, move to Step 2
+- ❌ `command not found` → install Node.js:
+  1. Go to [nodejs.org](https://nodejs.org)
+  2. Download the **LTS** version
+  3. Install normally (Next → Next → Install)
+  4. Run `node --version` again to confirm
+
+---
+
+## Step 2 — Set Up Your IDE
+
+You need an AI-powered IDE to work on this project. There are two options:
+
+**Option A — Kiro IDE (recommended, used by this project)**
+1. Go to [kiro.dev](https://kiro.dev) → download and install
+2. Open Kiro
+3. Sign in with your Anthropic/Claude account
+
+**Option B — Terminal only**
+- Install Claude Code by running:
+  ```bash
+  npm install -g @anthropic-ai/claude-code
+  ```
+- Sign in with your Anthropic/Claude account when prompted
+- All work is done via terminal commands
+
+**Expected output:** Kiro opens successfully and you are logged in, or `claude --version` returns a version number in terminal.
+
+---
+
+## Step 3 — Accept GitHub Invitation
+
+> Applies to invited collaborators only (not the repo owner)
+
+1. Check your email for a message from GitHub titled *"You've been invited to collaborate"*
+2. Click **Accept invitation**
+3. You will be redirected to the `barista-coffee-membership` repo on GitHub
+
+**Expected output:** You can see the `barista-coffee-membership` repository on GitHub without any access error.
+
+---
+
+## Step 4 — Clone the Repository
+
+Open Terminal and run the following commands one by one:
+
+```bash
+cd ~/Desktop
+git clone https://github.com/htrang-189/barista-coffee-membership.git
+cd barista-coffee-membership
+```
+
+**Expected output:**
+```
+Receiving objects: 100% (xxx/xxx), done.
+htrang@MacBook barista-coffee-membership %
+```
+
+---
+
+## Step 5 — Open the Project in Kiro
+
+> Skip this step if you are using Terminal only (Option B above)
+
+1. Open Kiro
+2. Go to **File → Open Folder**
+3. Select the `barista-coffee-membership` folder on your Desktop
+4. The project files will appear in the left panel
+
+**Expected output:** Left panel shows folders `.claude` and `_bmad` — setup is complete. ✅
+
+---
+
+## Project Structure
+
+```
+barista-coffee-membership/
+├── README.md                         ← Project overview
+├── docs/
+│   └── SETUP.md                      ← This file
+├── .claude/
+│   └── skills/                       ← 44 BMad skills (agents, workflows)
+└── _bmad/
+    └── _bmad-output/
+        ├── planning-artifacts/       ← PRD, Architecture documents
+        └── implementation-artifacts/ ← Sprint, Stories
+```
+
+---
+
+## Need Help?
+
+Contact **Trang** (repo owner) via Slack or open an Issue on GitHub.

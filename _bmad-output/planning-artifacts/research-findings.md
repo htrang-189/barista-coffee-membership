@@ -2,141 +2,165 @@
 
 Date: 2026-06-01
 Project: barista-coffee-membership
+Status: Reconciled with Project Context
 
 ## Research Goal
 
-Validate the lean MVP direction for a very small coffee shop membership app where customers prepay for 20 cups and both the owner and customer need a clear balance and usage history.
+Validate the Project Context direction: a single-shop coffee membership app with authenticated admin and customer areas, package sizes of 10, 20, and 30, fixed bonus cup rules, delivery tracking, current balance management, and operational reporting.
 
 ## Sources Reviewed
 
-- Toast gift card product and support materials: https://pos.toasttab.com/products/gift-card/ and https://support.toasttab.com/en/article/Gift-Card-FAQ-1492723819694
-- Square Loyalty and gift-card responsibility materials: https://squareup.com/us/en/software/loyalty and https://squareup.com/us/en/legal/general/pos-annotated
-- Digital punch card and coffee loyalty examples: https://baristacard.com/, https://perkpad.io/, https://www.stampme.com/cafes-and-restaurants-old
-- Gift card liability/accounting references: https://www.bookkeep.com/docs/apps/square/accurate-gift-card-liability-reporting-with-square, https://quickbooks.intuit.com/ca/resources/accountants/gift-card-accounting/, https://www.double-entry-bookkeeping.com/deferred-revenue/accounting-for-gift-cards/
-- Customer balance lookup patterns from gift-card systems and passwordless customer portal patterns.
+- Project Context: `_bmad-output/project-context.md`
+- Comparable coffee membership, stored-value, and punch-card workflows.
+- Customer account portal and password-based access patterns.
+- Small business balance tracking and audit-history patterns.
 
 ## Market Pattern
 
-Most comparable tools are not narrow prepaid cup trackers. They are broader systems in one of these categories:
+Comparable tools often fall into these categories:
 
 - POS-integrated gift cards.
 - Digital loyalty or punch cards.
-- Wallet-based customer cards.
-- Marketing and retention platforms.
+- Customer account portals.
+- Stored-value balance systems.
+- Admin dashboards for balances and activity history.
 
-These systems often emphasize repeat visits, QR scanning, Apple/Google Wallet, POS integrations, rewards, marketing, and multi-location use. That is useful context, but too broad for this MVP.
+The Project Context narrows this product to a user-managed single-shop app. It does not need full POS or marketing automation, but it does require stronger authentication and account separation than a public balance lookup.
 
 ## Relevant Product Lessons
 
-### 1. Customer Balance Visibility Is Expected
+### 1. Customer Login Creates Clear Access Boundaries
 
-Toast advertises customer-accessible gift card balance management, and gift-card systems commonly provide ways for customers to check remaining balances. This supports the decision to include a customer view in the MVP.
+The Project Context requires customer login flows. The customer experience should use authenticated customer accounts, not private public links.
 
-MVP implication: the customer view should be included from the start, even if it is simple.
+MVP implication: customers must log in before seeing balance and delivery history.
 
-### 2. Manual Lookup Still Matters
+### 2. Admin And Customer Areas Must Be Separate
 
-POS gift-card workflows often support scanning but also allow manual entry or lookup. Since this MVP excludes QR codes, manual customer lookup by name or phone is acceptable for the owner view.
+The Project Context requires separate `/admin/*` and `/customer/*` route areas, session checks, and server-side permission validation.
 
-MVP implication: owner lookup should be fast and forgiving, but does not need QR or wallet support.
+MVP implication: package purchase recording, delivery recording, customer management, and reporting belong only in the admin area.
 
-### 3. A Ledger Is Better Than Separate Hidden Counters
+### 3. Package Size Validation Is Core Business Logic
 
-Gift card and stored-value systems rely on transaction histories and balance reporting. For this product, a transaction ledger is the simplest way to support purchases, redemptions, corrections, and customer-visible history.
+Only 10, 20, and 30 cup packages are valid.
 
-MVP implication: model balance from transactions instead of mutating a standalone balance without history.
+MVP implication: package size validation must exist on the server and should also be reflected in the UI through constrained controls.
 
-### 4. Corrections Need Audit Notes
+### 4. Bonus Cup Rules Must Be Explicit
 
-Small shops will make occasional entry mistakes. A manual adjustment transaction with a required note is simpler and more transparent than allowing silent edits or deletes.
+The required package calculations are:
 
-MVP implication: support `adjustment` transactions in MVP.
+- 10-cup package grants 11 total cups.
+- 20-cup package grants 22 total cups.
+- 30-cup package grants 30 total cups.
 
-### 5. Accounting Language Should Be Practical, Not Overbuilt
+MVP implication: the UI should show the calculation clearly, and tests should cover all three scenarios.
 
-Gift card accounting sources consistently treat prepaid balances as future obligations or deferred revenue/liability until redeemed. For a tiny shop, the app does not need formal accounting automation, but the reporting should avoid hiding outstanding cup obligations.
+### 5. Delivery History Is The Usage Record
 
-MVP implication: show:
+The Project Context uses delivery terminology. A delivery represents one cup served to a customer and decreases the customer's balance by 1.
 
-- Total recorded package sales.
-- Total cups sold.
-- Total cups redeemed.
-- Total outstanding cups.
+MVP implication: planning, UI, tests, and reports should use `delivery` and `delivery history`, not `redemption`.
 
-Avoid claiming full accounting compliance in MVP.
+### 6. Balance Updates Need Database Transactions
 
-### 6. Existing Loyalty Tools Are Too Broad For This Use Case
+Recording a package purchase or delivery changes multiple pieces of data. The history record and balance update must succeed or fail together.
 
-Digital punch-card products focus on earning stamps toward rewards. This app is different: customers have already paid, and the shop owes future drinks. That makes accuracy and trust more important than promotion or gamification.
+MVP implication: package and delivery workflows should use database transactions.
 
-MVP implication: do not frame the product as loyalty software. Frame it as prepaid membership tracking.
+### 7. Reporting Should Be Operational
+
+The app can show recorded package revenue and cup balances, but it should not claim formal accounting compliance.
+
+MVP implication: reports should include:
+
+- Total customer accounts.
+- Total recorded package revenue.
+- Package purchases by size.
+- Total bonus cups granted.
+- Total cups added.
+- Total cups delivered.
+- Total outstanding cup balance.
+- Low balance customers.
+- Recent deliveries.
 
 ## Recommended MVP Positioning
 
-Barista Coffee Membership is a tiny prepaid cup ledger for independent coffee shops that sell simple drink packages.
+Barista Coffee Membership is an authenticated coffee package and delivery tracker for a single shop.
 
 It should be optimized for:
 
-- Owner trust.
-- Customer balance transparency.
-- Fast cup redemption.
-- Simple revenue visibility.
-- Easy correction of mistakes.
+- Secure admin and customer access.
+- Correct bonus cup calculation.
+- Fast delivery recording.
+- Clear current balance display.
+- Duplicate account prevention.
+- Simple operational reporting.
 
-It should not compete directly with full POS, gift-card, or loyalty systems.
+It should not compete with full POS, accounting, or marketing systems.
 
-## Suggested MVP Access Pattern
+## Recommended Access Pattern
 
-For the customer view, use a private customer link rather than full customer accounts.
+Use session-based login for both admin and customer areas.
 
-Recommended approach:
+- Admins log in before accessing `/admin/*`.
+- Customers log in before accessing `/customer/*`.
+- Passwords are hashed with bcrypt.
+- Logout clears sessions.
+- Middleware validates authenticated role before protected routes.
+- Customers can only view their own account data.
 
-- Each customer has a private, hard-to-guess view URL.
-- The owner can share the link manually.
-- The customer page is read-only.
-- No password, no staff accounts, no customer account setup.
+## Recommended Data Model
 
-This matches the lean scope better than login, OTP, QR codes, or wallet passes.
+Recommended tables:
 
-Risk: anyone with the link can view that customer's balance and history.
+- `admin_users`
+- `customer_accounts`
+- `package_purchases`
+- `delivery_history`
 
-Mitigation for MVP:
+Recommended customer account fields:
 
-- Do not show sensitive payment details.
-- Show only first name or display name if desired.
-- Allow the owner to regenerate the private link.
+- `id`
+- `name`
+- `phone`
+- `email`
+- `login_identifier`
+- `password_hash`
+- `current_balance`
+- `created_at`
+- `updated_at`
 
-## Recommended Transaction Types
+Recommended package purchase fields:
 
-Use one `transactions` table or collection with:
+- `id`
+- `customer_id`
+- `package_size`
+- `bonus_cups`
+- `total_cups_added`
+- `amount_paid`
+- `created_by_admin_id`
+- `created_at`
 
-- `purchase`: cup delta `+20`, amount recorded, note optional.
-- `redemption`: cup delta `-1`, amount `0`, note optional.
-- `adjustment`: positive or negative cup delta, amount `0`, note required.
+Recommended delivery history fields:
 
-Derived metrics:
-
-```text
-remaining_cups = sum(cup_delta)
-used_cups = abs(sum(cup_delta where type = redemption))
-recorded_revenue = sum(amount where type = purchase)
-outstanding_cups = sum(cup_delta)
-```
+- `id`
+- `customer_id`
+- `delivered_cups`
+- `balance_after`
+- `note`
+- `created_by_admin_id`
+- `delivery_date`
 
 ## Product Risks
 
-- A public customer link may be shared accidentally.
-- Duplicate customer records could split balances.
-- Owner may expect accounting-grade reporting from simple revenue totals.
-- Without staff accounts, all edits are effectively attributed to the shop owner/system.
-- If package price changes later, historical purchase amounts must remain transaction-specific.
+- Incorrect bonus cup calculation could create balance disputes.
+- Duplicate customer accounts could split balances and delivery history.
+- Weak session handling could expose customer or admin data.
+- Concurrent delivery recording could overdraw a balance without database transactions.
+- Admins may expect accounting-grade reporting from simple recorded package totals.
 
 ## Research Conclusion
 
-The brainstormed MVP is appropriately lean. The strongest research-backed adjustment is to treat the product as a transparent stored-cup ledger, not as loyalty software. The transaction-based model is a good fit because it keeps the implementation simple while supporting usage history, customer trust, revenue visibility, and corrections.
-
-## Recommended Next Step
-
-Review and confirm these research findings. After approval, create the Product Brief using this positioning:
-
-> A tiny prepaid cup ledger for independent coffee shops, with owner-managed transactions and read-only customer balance views.
+The reconciled MVP should follow the Project Context: authenticated admin and customer flows, validated package sizes, fixed bonus cup rules, delivery history, transactional balance updates, and operational reporting. Earlier assumptions about private links, fixed 20-cup-only packages, and redemption terminology are superseded.

@@ -7,11 +7,11 @@ Project: barista-coffee-membership
 
 ### Barista Coffee Membership Helps Small Coffee Shops Track Prepaid Cups Without Spreadsheets Or Paper Cards
 
-Independent coffee shops that sell prepaid drink packages now have a simpler way to track customer balances. Barista Coffee Membership is a lightweight prepaid cup ledger for shops that sell 20-cup memberships and need clear records of purchases, redemptions, remaining cups, and customer usage history.
+Independent coffee shops that sell prepaid drink packages now have a simpler way to track customer balances. Barista Coffee Membership is a lightweight prepaid cup ledger for shops that sell memberships and need clear records of purchases, redemptions, remaining cups, and customer usage history.
 
 The product is designed for very small membership programs, especially shops with only a handful of prepaid customers. Instead of forcing the shop into a full POS, loyalty, or rewards platform, Barista Coffee Membership focuses on one job: keeping an accurate ledger of prepaid cups.
 
-Shop owners can create customers, record 20-cup purchases, redeem one cup at a time, and make transparent balance adjustments when mistakes happen. Customers receive a private read-only link where they can check their remaining cups, used cups, and usage history without creating an account.
+Shop owners can create customers, record purchases, redeem one cup at a time, and make transparent balance adjustments when mistakes happen. Customers receive a private read-only link where they can check their remaining cups, used cups, and usage history without creating an account.
 
 For shops currently relying on paper punch cards, notebooks, or spreadsheets, Barista Coffee Membership provides a clearer and more trustworthy way to manage prepaid coffee memberships while staying intentionally lean.
 
@@ -19,7 +19,7 @@ For shops currently relying on paper punch cards, notebooks, or spreadsheets, Ba
 
 ### 1. What problem does this solve?
 
-Small coffee shops may sell prepaid 20-cup memberships but track them manually with paper cards, spreadsheets, or memory. That creates risk of lost cards, unclear balances, accidental over-redemption, and customer uncertainty. This product gives the owner and customer a shared, simple source of truth.
+Small coffee shops may sell prepaid memberships but track them manually with paper cards, spreadsheets, or memory. That creates risk of lost cards, unclear balances, accidental over-redemption, and customer uncertainty. This product gives the owner and customer a shared, simple source of truth.
 
 ### 2. Why would a shop use this instead of a spreadsheet?
 

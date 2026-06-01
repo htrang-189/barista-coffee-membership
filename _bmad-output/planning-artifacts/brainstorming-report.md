@@ -2,114 +2,126 @@
 
 Date: 2026-06-01
 Project: barista-coffee-membership
+Status: Reconciled with Project Context
 
 ## Brainstorm Topic
 
-A lightweight coffee membership app for a small coffee shop where customers prepay for 20 cups. The shop owner needs to track customer balances, cup usage, and revenue. Customers should be able to view their own remaining cups, used cups, and usage history.
+A small authenticated coffee membership app where admins create customer accounts, record prepaid package purchases, calculate bonus cups, record cup deliveries, and let customers log in to view their own current balance and delivery history.
 
 ## Context
 
-The shop has a very small membership base, around 2-10 customers. The MVP should stay extremely lean and avoid infrastructure or workflow complexity that would only matter at larger scale.
+The Project Context is now the primary source of truth for business and technical requirements. The MVP should remain simple, but it must include authenticated admin and customer areas, package-size validation, bonus cup calculations, delivery tracking, and clear balance reporting.
 
 ## Confirmed MVP Decisions
 
-- Customers have their own view showing remaining cups, used cups, and usage history.
-- Every drink counts as 1 cup for MVP.
-- Packages do not expire.
-- Single shop only.
-- Payments are handled outside the app.
-- The app records package purchases and revenue, but does not process payments.
-- No staff accounts in MVP.
-- No QR codes in MVP.
-- No loyalty or rewards features in MVP.
-- No payment integration in MVP.
-- No offline mode in MVP.
-- No multi-shop support in MVP.
+- Admin and customer users authenticate before accessing protected areas.
+- Admin and customer interfaces are separate.
+- Admin routes are separate from customer routes.
+- Customers have accounts and log in to view their own balance and history.
+- Admins create customer accounts and manage balances.
+- Package sizes are limited to 10, 20, and 30.
+- Bonus cup rules are fixed:
+  - 10-cup package grants 11 total cups.
+  - 20-cup package grants 22 total cups.
+  - 30-cup package grants 30 total cups.
+- A delivery represents one served cup and subtracts 1 cup from balance.
+- Delivery recording is blocked when customer balance is 0.
+- Low balance warning appears when balance is 5 cups or fewer.
+- Duplicate customer account creation should be prevented.
+- Payments may be recorded for reporting, but payment processing is out of scope.
+- Single-shop operation remains the MVP boundary.
 
 ## Recommended Core Model
 
-Use a simple transaction-based ledger instead of separate package purchase and cup redemption concepts.
+Use customer accounts with current balances plus auditable package and delivery records.
 
-Each balance-changing event is recorded as a transaction:
+Core records:
 
-- `purchase`: adds 20 cups and records revenue.
-- `redemption`: subtracts 1 cup.
-- `adjustment`: adds or subtracts cups with a required note.
+- `customer_accounts`: customer identity, login credentials, current balance, contact details, and timestamps.
+- `package_purchases`: package size, bonus cups, total cups added, amount paid, admin actor, and timestamp.
+- `delivery_history`: one row per delivered cup, customer reference, balance after delivery, admin actor, timestamp, and optional note.
 
-Derived values:
-
-```text
-remaining_cups = sum(transaction.cup_delta)
-used_cups = absolute sum(redemption cup_delta)
-revenue = sum(purchase amount)
-```
-
-Example transactions:
+Balance-changing operations should use database transactions so history and balance stay consistent.
 
 ```text
-purchase   +20 cups   $50   "20-cup package"
-redemption -1 cup     $0    "Latte"
-adjustment +1 cup     $0    "Corrected accidental redemption"
-```
+10-cup package -> 1 bonus cup -> 11 total cups
+20-cup package -> 2 bonus cups -> 22 total cups
+30-cup package -> 0 bonus cups -> 30 total cups
 
-This keeps the MVP simple while preserving an audit trail for corrections and disputes.
+package_purchase: current_balance += total_cups
+delivery: current_balance -= 1
+```
 
 ## MVP Workflows
 
-### Owner View
+### Admin View
 
-- Create a customer.
-- Record a 20-cup package purchase.
-- Redeem 1 cup for a customer.
-- Make a manual cup adjustment with a required note.
-- View each customer's remaining cups, used cups, and transaction history.
-- View simple revenue totals from recorded purchases.
+- Log in to the admin area.
+- Create a customer account with required login and contact details.
+- Avoid duplicate accounts by checking phone or login identifier.
+- Record a package purchase for 10, 20, or 30 cups.
+- Show bonus cup calculation before saving a package purchase.
+- Record one delivered cup for a customer.
+- Block delivery recording at 0 balance.
+- View customer balance, package purchases, and delivery history.
+- See low balance warnings.
+- View operational reports.
 
 ### Customer View
 
-- View remaining cups.
-- View used cups.
-- View usage history.
+- Log in to the customer area.
+- View current cup balance prominently.
+- View low balance warning when applicable.
+- View package purchase history.
+- View delivery history in reverse chronological order.
+- Customer cannot edit data or access admin functions.
 
 ## Lean Screen Ideas
 
-### Owner Dashboard
+### Admin Dashboard
 
-- Total recorded revenue.
-- Total active customers.
-- Total outstanding cups.
-- Simple customer list with remaining cup balances.
+- Total customer accounts.
+- Total outstanding cup balance.
+- Recorded package revenue.
+- Bonus cups granted.
+- Total cups delivered.
+- Low balance customers.
+- Recent deliveries.
 
 ### Customer Detail
 
 - Customer name and contact details.
-- Remaining cups.
-- Used cups.
-- Transaction history.
-- Actions: record 20-cup purchase, redeem 1 cup, manual adjustment.
+- Current balance.
+- Low balance status.
+- Package purchase history.
+- Delivery history.
+- Actions: record package purchase, record delivery, edit customer.
 
-### Customer Public View
+### Package Purchase
 
-- Remaining cups.
-- Used cups.
-- Usage history.
+- Package size selector: 10, 20, or 30.
+- Bonus cup calculation.
+- Total cups added.
+- Amount paid.
+
+### Customer Balance View
+
+- Current balance.
+- Low balance warning.
+- Package history.
+- Delivery history.
 
 ## Key Edge Cases
 
-- Attempting to redeem when a customer has 0 cups.
-- Accidental redemption.
-- Incorrect purchase amount entered.
-- Customer buys another 20-cup package before using the previous balance.
-- Duplicate customer records.
-- Customer disputes usage history.
+- Attempting delivery when balance is 0.
+- Invalid package size outside 10, 20, or 30.
+- Incorrect bonus cup calculation.
+- Duplicate customer account.
+- Invalid admin or customer login.
+- Customer attempting to access admin functions.
+- Concurrent delivery recordings for the same customer.
+- Database failure during package or delivery update.
 
 ## Recommended MVP Boundary
 
-The MVP should prioritize reliability, clarity, and speed over feature breadth. For a shop with 2-10 membership customers, the app should behave more like a clean ledger and balance viewer than a full POS, loyalty, or CRM system.
-
-## Open Questions For Research
-
-- What do comparable coffee shop membership or prepaid-card tools emphasize?
-- How do small businesses usually handle stored-value balances, punch cards, or prepaid packages?
-- Are there accounting or reporting concepts the MVP should represent clearly, such as prepaid revenue versus outstanding cup liability?
-- What customer-facing access pattern is simplest while still reasonably private?
+The MVP should focus on authenticated account management, package purchase tracking, fixed bonus cup calculation, delivery recording, balance visibility, and simple reporting. It should not expand into POS integration, loyalty campaigns, payment processing, QR codes, offline mode, or multi-shop operations.

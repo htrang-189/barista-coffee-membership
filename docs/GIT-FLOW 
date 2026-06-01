@@ -1,0 +1,172 @@
+# Git Flow Guide
+
+This guide explains how to use Git for day-to-day collaboration on the **Barista Coffee Membership** project.  
+For: BA, Developer, Tester joining the project.
+
+---
+
+## What is Git?
+
+Git is a system that tracks every change made to the project over time. Think of it like a detailed version history for the entire project — not just one file, but everything.
+
+Every saved checkpoint is called a **commit**. Each commit has:
+- A message describing what changed
+- A timestamp
+- The name of who made the change
+
+This means the team can always see what was done, when, and by whom — and roll back if something goes wrong.
+
+---
+
+## Core Concepts
+
+| Term | Simple Meaning |
+|---|---|
+| **Repository (repo)** | The project folder, tracked by Git |
+| **Branch** | An independent copy of the project to work on safely |
+| **main** | The main branch — the official, stable version |
+| **Stage** | Selecting which changes you want to include in the next commit |
+| **Commit** | Saving a checkpoint with a message |
+| **Push** | Uploading your commits to GitHub so others can see them |
+| **Pull** | Downloading the latest changes from GitHub to your machine |
+| **Conflict** | Two people edited the same part of the same file — Git needs help deciding which version to keep |
+
+---
+
+## Daily Workflow
+
+### The Golden Rule
+> **Always Pull before you start working.** This ensures you have the latest version before making any changes.
+
+---
+
+### Step-by-step: A typical working session
+
+```
+1. Pull latest changes from GitHub
+2. Make your changes (edit files, add documents, etc.)
+3. Stage the files you changed
+4. Commit with a clear message
+5. Push to GitHub
+```
+
+---
+
+## How to Do It in Kiro (for BA)
+
+### Pull — get latest changes before starting
+
+1. Open the **Source Control** tab (left sidebar, branch icon)
+2. Click the **⋯** menu at the top of the panel
+3. Select **Pull**
+
+> Always do this at the start of every working session.
+
+---
+
+### Stage — select what to save
+
+1. In **Source Control**, you will see your changed files listed under **Changes**
+2. Click the **+** icon next to **Changes** to stage all files
+3. Or click **+** next to individual files to stage only specific ones
+
+---
+
+### Commit — save a checkpoint
+
+1. Type a short message in the **Message** box at the top
+2. Press **Commit**
+
+**Commit message examples:**
+- `Add PRD document`
+- `Update user stories epic 1`
+- `Fix typo in requirements`
+
+Keep messages short and descriptive — your teammates will read them.
+
+---
+
+### Push — upload to GitHub
+
+1. After committing, the button changes to **Sync Changes ↑**
+2. Click it to push your commits to GitHub
+
+---
+
+## How to Do It in Terminal (for Developer)
+
+### Pull
+```bash
+git pull
+```
+
+### Stage all changes
+```bash
+git add .
+```
+
+### Stage specific files only
+```bash
+git add docs/SETUP.md
+```
+
+### Commit
+```bash
+git commit -m "Add PRD document"
+```
+
+### Push
+```bash
+git push
+```
+
+---
+
+## Working as a Team — Important Rules
+
+### 1. Always Pull first
+Before you start any work, pull the latest version. This prevents most conflicts.
+
+### 2. Communicate before editing the same file
+If two people edit the same file at the same time, a conflict may occur. A quick message on Slack like *"I'm updating the PRD now"* saves a lot of trouble.
+
+### 3. Commit often, in small chunks
+Don't wait until you've changed 20 files to commit. Commit each logical unit of work separately. It's easier to review and easier to undo if needed.
+
+### 4. Never push directly to main (for developers)
+Developers should work on a separate branch and open a Pull Request to merge into `main`. BAs working on documents can commit directly to `main` for simplicity.
+
+---
+
+## What is a Conflict?
+
+A conflict happens when two people edit the **same lines** in the **same file** and both push their changes. Git cannot automatically decide which version to keep, so it asks you.
+
+**How to avoid it:**
+- Pull before starting work
+- Communicate with teammates when editing shared documents
+
+**How to resolve it in Kiro:**
+1. Kiro will highlight the conflicting file in red in Source Control
+2. Open the file — you will see both versions marked clearly
+3. Choose which version to keep (or combine them)
+4. Stage and commit the resolved file
+
+---
+
+## Quick Reference
+
+| Action | Kiro | Terminal |
+|---|---|---|
+| Pull latest | Source Control → ⋯ → Pull | `git pull` |
+| Stage all | Click + next to Changes | `git add .` |
+| Commit | Type message → Commit | `git commit -m "message"` |
+| Push | Sync Changes ↑ | `git push` |
+| Check status | Source Control panel | `git status` |
+| View history | GRAPH section in Source Control | `git log --oneline` |
+
+---
+
+## Need Help?
+
+Contact **Trang** (repo owner) via Slack or open an Issue on GitHub.

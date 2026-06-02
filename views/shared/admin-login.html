@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Admin Login | Barista Coffee Membership</title>
+    <link rel="stylesheet" href="/css/styles.css">
+  </head>
+  <body class="auth-page">
+    <main class="login-layout">
+      <section class="login-visual" aria-label="Barista Coffee Membership">
+        <div class="brand">
+          <span class="brand-mark">B</span>
+          <span>Barista Membership</span>
+        </div>
+        <div>
+          <p class="eyebrow light">Owner Access</p>
+          <h1>Owner tools for cups, customers, and daily delivery.</h1>
+          <p class="login-copy">Secure access for the shop owner. Customer balance and admin workflows stay separate.</p>
+        </div>
+        <p class="login-footnote">Protected admin area</p>
+      </section>
+
+      <section class="login-panel">
+        <p class="eyebrow">Owner Access</p>
+        <h2>Admin login</h2>
+        {{MESSAGE}}
+        <form class="form" method="post" action="/admin/login" data-loading-form>
+          <input type="hidden" name="csrfToken" value="{{CSRF_TOKEN}}">
+          <label for="username">Username
+            <input id="username" name="username" autocomplete="username" required value="{{USERNAME}}">
+          </label>
+          <label for="password">Password
+            <input id="password" name="password" type="password" autocomplete="current-password" required>
+          </label>
+          <button class="button" type="submit">Log in</button>
+        </form>
+      </section>
+    </main>
+    <script src="/js/admin.js"></script>
+  </body>
+</html>

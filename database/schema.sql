@@ -53,6 +53,17 @@ CREATE TABLE IF NOT EXISTS delivery_history (
   CHECK (balance_after >= 0)
 );
 
+CREATE TABLE IF NOT EXISTS admin_action_logs (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  admin_user_id INTEGER,
+  action_type TEXT NOT NULL,
+  target_type TEXT,
+  target_id INTEGER,
+  message TEXT,
+  created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (admin_user_id) REFERENCES admin_users(id)
+);
+
 CREATE INDEX IF NOT EXISTS idx_customer_accounts_phone ON customer_accounts(phone);
 CREATE INDEX IF NOT EXISTS idx_customer_accounts_login_identifier ON customer_accounts(login_identifier);
 CREATE INDEX IF NOT EXISTS idx_customer_accounts_current_balance ON customer_accounts(current_balance);
@@ -61,3 +72,5 @@ CREATE INDEX IF NOT EXISTS idx_package_purchases_created_at ON package_purchases
 CREATE INDEX IF NOT EXISTS idx_package_purchases_package_size ON package_purchases(package_size);
 CREATE INDEX IF NOT EXISTS idx_delivery_history_customer_id ON delivery_history(customer_id);
 CREATE INDEX IF NOT EXISTS idx_delivery_history_delivery_date ON delivery_history(delivery_date);
+CREATE INDEX IF NOT EXISTS idx_admin_action_logs_admin_user_id ON admin_action_logs(admin_user_id);
+CREATE INDEX IF NOT EXISTS idx_admin_action_logs_created_at ON admin_action_logs(created_at);

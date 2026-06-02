@@ -87,6 +87,9 @@ _This file contains critical rules and patterns that AI agents must follow when 
 - Use simple, clean HTML forms for all data entry
 - Include client-side validation with clear error messages
 - Make all buttons and actions clearly labeled for users
+- Follow `docs/UI-IMPLEMENTATION-GUIDELINES.md` for future UI work
+- Use a warm, premium coffee-shop visual language with card-based dashboards, clean typography, clear balance displays, consistent spacing, and mobile-first responsive layouts
+- Use Starbucks public design-system analysis only as loose inspiration for coffee-retail warmth; do not copy Starbucks logos, trademarks, proprietary assets, exact branding, or brand names
 
 **Coffee Business Logic:**
 - Always display current cup balance prominently

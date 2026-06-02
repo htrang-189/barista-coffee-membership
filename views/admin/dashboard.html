@@ -6,16 +6,63 @@
     <title>Owner Dashboard | Barista Coffee Membership</title>
     <link rel="stylesheet" href="/css/styles.css">
   </head>
-  <body>
-    <main class="page-shell">
-      <section class="panel">
-        <p class="eyebrow">Owner MVP</p>
-        <h1>Barista Coffee Membership</h1>
-        <p>
-          The owner dashboard scaffold is ready. Customer management, package
-          purchases, deliveries, and balance tracking will be added in later
-          Phase 1 stories.
-        </p>
+  <body class="admin-page">
+    <main class="admin-frame">
+      <aside class="sidebar">
+        <div class="brand">
+          <span class="brand-mark">B</span>
+          <span>Barista</span>
+        </div>
+        <nav class="nav" aria-label="Admin navigation">
+          <a class="active" href="/admin/dashboard">Dashboard</a>
+          <a href="/admin/dashboard">Customers</a>
+          <a href="/admin/dashboard">Deliveries</a>
+          <a href="/admin/dashboard">Reports</a>
+        </nav>
+        <form class="logout-form" method="post" action="/admin/logout">
+          <input type="hidden" name="csrfToken" value="{{CSRF_TOKEN}}">
+          <button class="nav-logout" type="submit">Logout</button>
+        </form>
+      </aside>
+      <section class="main">
+        <div class="topbar">
+          <div>
+            <p class="eyebrow">Owner MVP</p>
+            <h1>Owner dashboard</h1>
+          </div>
+        </div>
+
+        <div class="metric-grid">
+          <section class="card">
+            <p class="metric-label">Customers</p>
+            <p class="metric-value">0</p>
+            <p class="muted">active accounts</p>
+          </section>
+          <section class="card">
+            <p class="metric-label">Outstanding cups</p>
+            <p class="metric-value">0</p>
+            <p class="muted">current balances</p>
+          </section>
+          <section class="card">
+            <p class="metric-label">Recorded revenue</p>
+            <p class="metric-value">$0</p>
+            <p class="muted">package purchases</p>
+          </section>
+          <section class="card">
+            <p class="metric-label">Bonus cups</p>
+            <p class="metric-value">0</p>
+            <p class="muted">granted</p>
+          </section>
+        </div>
+
+        <section class="card">
+          <h2>Admin authentication is active</h2>
+          <p>
+            This protected dashboard confirms the owner session is working.
+            Customer management, package purchases, deliveries, and balance
+            tracking will be added in later Phase 1 stories.
+          </p>
+        </section>
       </section>
     </main>
     <script src="/js/admin.js"></script>

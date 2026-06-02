@@ -1,0 +1,910 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Phase 1 Owner MVP UI Preview</title>
+  <style>
+    :root {
+      --green-900: #173f35;
+      --green-800: #1f5a48;
+      --green-700: #2f7058;
+      --cream: #f7f2e8;
+      --cream-2: #fffaf0;
+      --coffee: #4a3428;
+      --espresso: #2b211c;
+      --line: #dfd4c4;
+      --muted: #756b61;
+      --amber: #b66f1d;
+      --danger: #9f2d20;
+      --success: #25714f;
+      --white: #ffffff;
+      --shadow: 0 14px 35px rgba(39, 31, 24, 0.12);
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      color: var(--espresso);
+      background: var(--cream);
+      line-height: 1.45;
+    }
+
+    .preview-shell {
+      max-width: 1440px;
+      margin: 0 auto;
+      padding: 24px;
+    }
+
+    .preview-header {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 24px;
+      padding: 28px 0 20px;
+    }
+
+    h1, h2, h3, p {
+      margin-top: 0;
+    }
+
+    h1 {
+      margin-bottom: 8px;
+      font-size: 34px;
+      line-height: 1.1;
+      letter-spacing: 0;
+    }
+
+    h2 {
+      margin: 0 0 18px;
+      font-size: 24px;
+      letter-spacing: 0;
+    }
+
+    h3 {
+      margin-bottom: 8px;
+      font-size: 16px;
+      letter-spacing: 0;
+    }
+
+    .note {
+      max-width: 780px;
+      color: var(--muted);
+      margin-bottom: 0;
+    }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      min-height: 32px;
+      padding: 6px 14px;
+      border-radius: 999px;
+      background: var(--green-900);
+      color: var(--white);
+      font-weight: 700;
+      white-space: nowrap;
+    }
+
+    .screen {
+      margin: 28px 0;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: var(--cream-2);
+      box-shadow: var(--shadow);
+      overflow: hidden;
+    }
+
+    .screen-label {
+      display: flex;
+      justify-content: space-between;
+      gap: 16px;
+      padding: 14px 18px;
+      background: var(--green-900);
+      color: var(--white);
+      font-weight: 800;
+    }
+
+    .app-frame {
+      min-height: 680px;
+      background: var(--cream);
+    }
+
+    .admin-frame {
+      display: grid;
+      grid-template-columns: 236px minmax(0, 1fr);
+    }
+
+    .sidebar {
+      background: var(--green-900);
+      color: var(--white);
+      padding: 24px 18px;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 34px;
+      font-weight: 900;
+      font-size: 18px;
+    }
+
+    .brand-mark {
+      display: grid;
+      place-items: center;
+      width: 42px;
+      height: 42px;
+      border: 2px solid rgba(255, 255, 255, 0.75);
+      border-radius: 50%;
+      font-size: 19px;
+    }
+
+    .nav {
+      display: grid;
+      gap: 8px;
+    }
+
+    .nav a {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      min-height: 42px;
+      padding: 10px 12px;
+      border-radius: 999px;
+      color: rgba(255, 255, 255, 0.88);
+      text-decoration: none;
+      font-weight: 700;
+    }
+
+    .nav a.active,
+    .nav a:hover {
+      background: rgba(255, 255, 255, 0.16);
+      color: var(--white);
+    }
+
+    .main {
+      padding: 26px;
+    }
+
+    .topbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      margin-bottom: 22px;
+    }
+
+    .eyebrow {
+      margin-bottom: 4px;
+      color: var(--green-800);
+      font-size: 13px;
+      font-weight: 900;
+      text-transform: uppercase;
+    }
+
+    .actions {
+      display: flex;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+
+    .button {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      min-height: 44px;
+      padding: 0 18px;
+      border: 1px solid var(--green-900);
+      border-radius: 999px;
+      background: var(--green-900);
+      color: var(--white);
+      font-weight: 800;
+      text-decoration: none;
+    }
+
+    .button.secondary {
+      background: transparent;
+      color: var(--green-900);
+    }
+
+    .button.warning {
+      border-color: var(--amber);
+      background: var(--amber);
+    }
+
+    .button.disabled {
+      border-color: #b9aea0;
+      background: #d8cec0;
+      color: #74695f;
+    }
+
+    .metric-grid {
+      display: grid;
+      grid-template-columns: repeat(5, minmax(0, 1fr));
+      gap: 14px;
+      margin-bottom: 18px;
+    }
+
+    .card {
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: var(--white);
+      padding: 18px;
+    }
+
+    .metric-value {
+      margin: 8px 0 2px;
+      font-size: 30px;
+      line-height: 1;
+      font-weight: 900;
+      color: var(--green-900);
+    }
+
+    .metric-label,
+    .field-label,
+    th {
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 900;
+      text-transform: uppercase;
+    }
+
+    .content-grid {
+      display: grid;
+      grid-template-columns: minmax(0, 1.1fr) minmax(340px, 0.9fr);
+      gap: 18px;
+    }
+
+    .table-wrap {
+      overflow-x: auto;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      min-width: 680px;
+    }
+
+    th,
+    td {
+      padding: 13px 10px;
+      border-bottom: 1px solid var(--line);
+      text-align: left;
+      vertical-align: middle;
+    }
+
+    tr:last-child td {
+      border-bottom: 0;
+    }
+
+    .balance-pill {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-width: 68px;
+      min-height: 34px;
+      padding: 4px 12px;
+      border-radius: 999px;
+      background: #e5f0e8;
+      color: var(--success);
+      font-weight: 900;
+    }
+
+    .balance-pill.low {
+      background: #fff0d8;
+      color: var(--amber);
+    }
+
+    .balance-pill.zero {
+      background: #f7dfda;
+      color: var(--danger);
+    }
+
+    .list {
+      display: grid;
+      gap: 10px;
+      margin: 0;
+      padding: 0;
+      list-style: none;
+    }
+
+    .list-item {
+      display: flex;
+      justify-content: space-between;
+      gap: 14px;
+      padding: 12px 0;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .list-item:last-child {
+      border-bottom: 0;
+    }
+
+    .muted {
+      color: var(--muted);
+    }
+
+    .login-layout {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) 420px;
+      min-height: 680px;
+    }
+
+    .login-visual {
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      padding: 46px;
+      background:
+        radial-gradient(circle at 18% 22%, rgba(255, 255, 255, 0.2), transparent 28%),
+        linear-gradient(135deg, var(--green-900), var(--green-700));
+      color: var(--white);
+    }
+
+    .login-visual h2 {
+      max-width: 520px;
+      font-size: 46px;
+      line-height: 1.04;
+    }
+
+    .login-panel {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      padding: 42px;
+      background: var(--cream-2);
+    }
+
+    .form {
+      display: grid;
+      gap: 14px;
+    }
+
+    label {
+      display: grid;
+      gap: 7px;
+      font-weight: 800;
+    }
+
+    input,
+    select,
+    textarea {
+      width: 100%;
+      min-height: 46px;
+      padding: 10px 12px;
+      border: 1px solid #cabdac;
+      border-radius: 8px;
+      background: var(--white);
+      color: var(--espresso);
+      font: inherit;
+    }
+
+    textarea {
+      min-height: 96px;
+      resize: vertical;
+    }
+
+    .error-box {
+      border: 1px solid #e2aca6;
+      border-radius: 8px;
+      padding: 12px;
+      background: #fff0ed;
+      color: var(--danger);
+      font-weight: 800;
+    }
+
+    .search-row {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      gap: 10px;
+      margin-bottom: 16px;
+    }
+
+    .customer-hero {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) 290px;
+      gap: 18px;
+      margin-bottom: 18px;
+    }
+
+    .balance-card {
+      display: grid;
+      align-content: center;
+      min-height: 180px;
+      border-radius: 8px;
+      background: var(--green-900);
+      color: var(--white);
+      padding: 24px;
+    }
+
+    .balance-number {
+      margin: 8px 0;
+      font-size: 64px;
+      line-height: 0.95;
+      font-weight: 950;
+    }
+
+    .warning-strip {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-top: 14px;
+      padding: 11px 12px;
+      border-radius: 8px;
+      background: #fff0d8;
+      color: #75470c;
+      font-weight: 800;
+    }
+
+    .two-column {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+      gap: 18px;
+    }
+
+    .segmented {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 10px;
+    }
+
+    .segment {
+      display: grid;
+      place-items: center;
+      min-height: 74px;
+      border: 2px solid var(--line);
+      border-radius: 8px;
+      background: var(--white);
+      font-weight: 900;
+      text-align: center;
+    }
+
+    .segment.active {
+      border-color: var(--green-900);
+      background: #e7f0e8;
+      color: var(--green-900);
+    }
+
+    .calc-row {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 12px 0;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .calc-row.total {
+      border-bottom: 0;
+      font-size: 20px;
+      font-weight: 950;
+      color: var(--green-900);
+    }
+
+    .history-item {
+      display: grid;
+      grid-template-columns: 120px minmax(0, 1fr) auto;
+      gap: 16px;
+      padding: 14px 0;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .history-item:last-child {
+      border-bottom: 0;
+    }
+
+    @media (max-width: 980px) {
+      .admin-frame,
+      .login-layout,
+      .customer-hero,
+      .content-grid,
+      .two-column {
+        grid-template-columns: 1fr;
+      }
+
+      .sidebar {
+        padding: 16px;
+      }
+
+      .nav {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+
+      .metric-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+    }
+
+    @media (max-width: 640px) {
+      .preview-shell {
+        padding: 12px;
+      }
+
+      .preview-header,
+      .topbar,
+      .screen-label,
+      .history-item,
+      .list-item {
+        flex-direction: column;
+        display: flex;
+        align-items: stretch;
+      }
+
+      .main,
+      .login-panel,
+      .login-visual {
+        padding: 18px;
+      }
+
+      .metric-grid,
+      .nav,
+      .segmented,
+      .search-row {
+        grid-template-columns: 1fr;
+      }
+
+      .login-visual h2 {
+        font-size: 34px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main class="preview-shell">
+    <header class="preview-header">
+      <div>
+        <p class="eyebrow">Barista Coffee Membership</p>
+        <h1>Phase 1 Owner MVP UI Preview</h1>
+        <p class="note">High-fidelity static mockups for validating the owner/admin experience before implementation. Visual direction uses a warm cream canvas, layered greens, rounded pill actions, compact cards, and retail coffee operational clarity without copying Starbucks branding or assets.</p>
+      </div>
+      <span class="badge">Preview only</span>
+    </header>
+
+    <section class="screen">
+      <div class="screen-label">
+        <span>1. Admin Login</span>
+        <span>/admin/login</span>
+      </div>
+      <div class="app-frame login-layout">
+        <div class="login-visual">
+          <div class="brand"><span class="brand-mark">B</span><span>Barista Membership</span></div>
+          <div>
+            <h2>Owner tools for cups, customers, and daily delivery.</h2>
+            <p>Secure access for the shop owner. Customer balance and admin workflows stay separate.</p>
+          </div>
+          <p>Protected admin area</p>
+        </div>
+        <div class="login-panel">
+          <p class="eyebrow">Owner Access</p>
+          <h2>Admin login</h2>
+          <div class="error-box">Invalid login. Check your credentials and try again.</div>
+          <form class="form">
+            <label>Username
+              <input value="owner" aria-label="Username">
+            </label>
+            <label>Password
+              <input type="password" value="password" aria-label="Password">
+            </label>
+            <a class="button" href="#">Log in</a>
+            <p class="muted">Session expired messages return here without revealing which field was incorrect.</p>
+          </form>
+        </div>
+      </div>
+    </section>
+
+    <section class="screen">
+      <div class="screen-label">
+        <span>2. Owner Dashboard</span>
+        <span>/admin/dashboard</span>
+      </div>
+      <div class="app-frame admin-frame">
+        <aside class="sidebar">
+          <div class="brand"><span class="brand-mark">B</span><span>Barista</span></div>
+          <nav class="nav">
+            <a class="active" href="#">Dashboard</a>
+            <a href="#">Customers</a>
+            <a href="#">Deliveries</a>
+            <a href="#">Reports</a>
+            <a href="#">Logout</a>
+          </nav>
+        </aside>
+        <section class="main">
+          <div class="topbar">
+            <div>
+              <p class="eyebrow">Today</p>
+              <h2>Owner dashboard</h2>
+            </div>
+            <div class="actions">
+              <a class="button" href="#">Add customer</a>
+              <a class="button secondary" href="#">Open reports</a>
+            </div>
+          </div>
+          <div class="metric-grid">
+            <div class="card"><div class="metric-label">Customers</div><div class="metric-value">128</div><div class="muted">active accounts</div></div>
+            <div class="card"><div class="metric-label">Outstanding cups</div><div class="metric-value">842</div><div class="muted">current balances</div></div>
+            <div class="card"><div class="metric-label">Recorded revenue</div><div class="metric-value">$4,820</div><div class="muted">package purchases</div></div>
+            <div class="card"><div class="metric-label">Bonus cups</div><div class="metric-value">76</div><div class="muted">granted</div></div>
+            <div class="card"><div class="metric-label">Delivered cups</div><div class="metric-value">391</div><div class="muted">all time</div></div>
+          </div>
+          <div class="content-grid">
+            <div class="card">
+              <h3>Low balance customers</h3>
+              <div class="table-wrap">
+                <table>
+                  <thead><tr><th>Customer</th><th>Phone</th><th>Balance</th><th>Last delivery</th><th></th></tr></thead>
+                  <tbody>
+                    <tr><td>Mai Nguyen</td><td>555-0132</td><td><span class="balance-pill low">4 cups</span></td><td>Today 08:42</td><td><a class="button secondary" href="#">Open</a></td></tr>
+                    <tr><td>Linh Tran</td><td>555-0198</td><td><span class="balance-pill zero">0 cups</span></td><td>Yesterday</td><td><a class="button secondary" href="#">Open</a></td></tr>
+                    <tr><td>An Pham</td><td>555-0148</td><td><span class="balance-pill low">5 cups</span></td><td>May 30</td><td><a class="button secondary" href="#">Open</a></td></tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+            <div class="card">
+              <h3>Recent deliveries</h3>
+              <ul class="list">
+                <li class="list-item"><span><strong>Mai Nguyen</strong><br><span class="muted">Latte counter pickup</span></span><span>08:42<br><span class="muted">4 after</span></span></li>
+                <li class="list-item"><span><strong>David Le</strong><br><span class="muted">No note</span></span><span>08:11<br><span class="muted">14 after</span></span></li>
+                <li class="list-item"><span><strong>Sarah Vo</strong><br><span class="muted">Iced coffee</span></span><span>Yesterday<br><span class="muted">9 after</span></span></li>
+              </ul>
+            </div>
+          </div>
+        </section>
+      </div>
+    </section>
+
+    <section class="screen">
+      <div class="screen-label">
+        <span>3. Customer List</span>
+        <span>/admin/customers</span>
+      </div>
+      <div class="app-frame admin-frame">
+        <aside class="sidebar">
+          <div class="brand"><span class="brand-mark">B</span><span>Barista</span></div>
+          <nav class="nav">
+            <a href="#">Dashboard</a>
+            <a class="active" href="#">Customers</a>
+            <a href="#">Deliveries</a>
+            <a href="#">Reports</a>
+            <a href="#">Logout</a>
+          </nav>
+        </aside>
+        <section class="main">
+          <div class="topbar">
+            <div><p class="eyebrow">Accounts</p><h2>Customer list</h2></div>
+            <a class="button" href="#">Add customer</a>
+          </div>
+          <div class="card">
+            <div class="search-row">
+              <input value="mai" aria-label="Search by name phone or login identifier">
+              <a class="button secondary" href="#">Search</a>
+            </div>
+            <div class="table-wrap">
+              <table>
+                <thead><tr><th>Name</th><th>Phone</th><th>Email</th><th>Login</th><th>Current balance</th><th>Status</th><th>Last delivery</th></tr></thead>
+                <tbody>
+                  <tr><td><strong>Mai Nguyen</strong></td><td>555-0132</td><td>mai@example.com</td><td>mai.nguyen</td><td><span class="balance-pill low">4 cups</span></td><td>Low balance</td><td>Today 08:42</td></tr>
+                  <tr><td><strong>David Le</strong></td><td>555-0177</td><td>david@example.com</td><td>david.le</td><td><span class="balance-pill">14 cups</span></td><td>Active</td><td>Today 08:11</td></tr>
+                  <tr><td><strong>Linh Tran</strong></td><td>555-0198</td><td>-</td><td>linh.tran</td><td><span class="balance-pill zero">0 cups</span></td><td>Needs package</td><td>Yesterday</td></tr>
+                  <tr><td><strong>Sarah Vo</strong></td><td>555-0188</td><td>sarah@example.com</td><td>sarah.vo</td><td><span class="balance-pill">9 cups</span></td><td>Active</td><td>Yesterday</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+      </div>
+    </section>
+
+    <section class="screen">
+      <div class="screen-label">
+        <span>4. Customer Detail</span>
+        <span>/admin/customers/:customerId</span>
+      </div>
+      <div class="app-frame admin-frame">
+        <aside class="sidebar">
+          <div class="brand"><span class="brand-mark">B</span><span>Barista</span></div>
+          <nav class="nav">
+            <a href="#">Dashboard</a>
+            <a class="active" href="#">Customers</a>
+            <a href="#">Deliveries</a>
+            <a href="#">Reports</a>
+            <a href="#">Logout</a>
+          </nav>
+        </aside>
+        <section class="main">
+          <div class="customer-hero">
+            <div class="card">
+              <p class="eyebrow">Customer</p>
+              <h2>Mai Nguyen</h2>
+              <p><strong>Phone:</strong> 555-0132<br><strong>Email:</strong> mai@example.com<br><strong>Login identifier:</strong> mai.nguyen</p>
+              <div class="actions">
+                <a class="button warning" href="#">Record delivery</a>
+                <a class="button" href="#">Record package purchase</a>
+                <a class="button secondary" href="#">Edit details</a>
+              </div>
+            </div>
+            <div class="balance-card">
+              <div class="metric-label">Current balance</div>
+              <div class="balance-number">4</div>
+              <div>cups available</div>
+              <div class="warning-strip">Low balance: 5 cups or fewer</div>
+            </div>
+          </div>
+          <div class="two-column">
+            <div class="card">
+              <h3>Package purchase history</h3>
+              <ul class="list">
+                <li class="list-item"><span><strong>20-cup package</strong><br><span class="muted">+2 bonus cups, +22 total</span></span><span>$95.00<br><span class="muted">May 25</span></span></li>
+                <li class="list-item"><span><strong>10-cup package</strong><br><span class="muted">+1 bonus cup, +11 total</span></span><span>$50.00<br><span class="muted">May 10</span></span></li>
+              </ul>
+            </div>
+            <div class="card">
+              <h3>Delivery history</h3>
+              <ul class="list">
+                <li class="list-item"><span><strong>1 cup delivered</strong><br><span class="muted">Latte counter pickup</span></span><span>Today 08:42<br><span class="muted">4 after</span></span></li>
+                <li class="list-item"><span><strong>1 cup delivered</strong><br><span class="muted">No note</span></span><span>May 31<br><span class="muted">5 after</span></span></li>
+              </ul>
+            </div>
+          </div>
+        </section>
+      </div>
+    </section>
+
+    <section class="screen">
+      <div class="screen-label">
+        <span>5. Record Package Purchase</span>
+        <span>/admin/customers/:customerId/package-purchases</span>
+      </div>
+      <div class="app-frame admin-frame">
+        <aside class="sidebar">
+          <div class="brand"><span class="brand-mark">B</span><span>Barista</span></div>
+          <nav class="nav">
+            <a href="#">Dashboard</a>
+            <a class="active" href="#">Customers</a>
+            <a href="#">Deliveries</a>
+            <a href="#">Reports</a>
+            <a href="#">Logout</a>
+          </nav>
+        </aside>
+        <section class="main">
+          <div class="topbar">
+            <div><p class="eyebrow">Mai Nguyen</p><h2>Record package purchase</h2></div>
+            <span class="balance-pill low">Current balance: 4 cups</span>
+          </div>
+          <div class="two-column">
+            <div class="card">
+              <form class="form">
+                <label>Package size
+                  <div class="segmented">
+                    <div class="segment">10 cups<br><span class="muted">+1 bonus</span></div>
+                    <div class="segment active">20 cups<br><span class="muted">+2 bonus</span></div>
+                    <div class="segment">30 cups<br><span class="muted">no bonus</span></div>
+                  </div>
+                </label>
+                <label>Amount paid
+                  <input value="$95.00" aria-label="Amount paid">
+                </label>
+                <div class="actions">
+                  <a class="button" href="#">Save package purchase</a>
+                  <a class="button secondary" href="#">Cancel</a>
+                </div>
+              </form>
+            </div>
+            <div class="card">
+              <h3>Balance preview</h3>
+              <div class="calc-row"><span>Current balance</span><strong>4 cups</strong></div>
+              <div class="calc-row"><span>Package cups</span><strong>20 cups</strong></div>
+              <div class="calc-row"><span>Bonus cups</span><strong>2 cups</strong></div>
+              <div class="calc-row total"><span>Projected balance</span><strong>26 cups</strong></div>
+              <p class="muted">Only 10, 20, and 30 cup packages are selectable. Save creates a package purchase and updates balance in one transaction.</p>
+            </div>
+          </div>
+        </section>
+      </div>
+    </section>
+
+    <section class="screen">
+      <div class="screen-label">
+        <span>6. Record Delivery</span>
+        <span>/admin/customers/:customerId/deliveries</span>
+      </div>
+      <div class="app-frame admin-frame">
+        <aside class="sidebar">
+          <div class="brand"><span class="brand-mark">B</span><span>Barista</span></div>
+          <nav class="nav">
+            <a href="#">Dashboard</a>
+            <a class="active" href="#">Customers</a>
+            <a href="#">Deliveries</a>
+            <a href="#">Reports</a>
+            <a href="#">Logout</a>
+          </nav>
+        </aside>
+        <section class="main">
+          <div class="customer-hero">
+            <div class="card">
+              <p class="eyebrow">Fast counter action</p>
+              <h2>Record delivery for Mai Nguyen</h2>
+              <form class="form">
+                <label>Optional note
+                  <textarea>Latte counter pickup</textarea>
+                </label>
+                <div class="actions">
+                  <a class="button warning" href="#">Record 1 cup delivery</a>
+                  <a class="button secondary" href="#">Cancel</a>
+                </div>
+              </form>
+              <p class="muted">The action subtracts exactly 1 cup and records balance after delivery.</p>
+            </div>
+            <div class="balance-card">
+              <div class="metric-label">Before delivery</div>
+              <div class="balance-number">4</div>
+              <div>cups available</div>
+              <div class="warning-strip">After save: 3 cups</div>
+            </div>
+          </div>
+          <div class="card">
+            <h3>Zero-balance state preview</h3>
+            <p><span class="balance-pill zero">0 cups</span> Delivery button becomes disabled and the screen explains that a package purchase is needed before delivery can be recorded.</p>
+            <a class="button disabled" href="#">Record 1 cup delivery</a>
+          </div>
+        </section>
+      </div>
+    </section>
+
+    <section class="screen">
+      <div class="screen-label">
+        <span>7. Delivery History</span>
+        <span>/admin/deliveries or dashboard drill-down</span>
+      </div>
+      <div class="app-frame admin-frame">
+        <aside class="sidebar">
+          <div class="brand"><span class="brand-mark">B</span><span>Barista</span></div>
+          <nav class="nav">
+            <a href="#">Dashboard</a>
+            <a href="#">Customers</a>
+            <a class="active" href="#">Deliveries</a>
+            <a href="#">Reports</a>
+            <a href="#">Logout</a>
+          </nav>
+        </aside>
+        <section class="main">
+          <div class="topbar">
+            <div><p class="eyebrow">Newest first</p><h2>Delivery history</h2></div>
+            <div class="actions">
+              <input value="Search customer or note" aria-label="Search delivery history">
+              <a class="button secondary" href="#">Filter</a>
+            </div>
+          </div>
+          <div class="card">
+            <div class="history-item">
+              <span><strong>Today</strong><br><span class="muted">08:42</span></span>
+              <span><strong>Mai Nguyen</strong><br><span class="muted">Latte counter pickup</span></span>
+              <span><span class="balance-pill low">4 after</span><br><span class="muted">Admin: owner</span></span>
+            </div>
+            <div class="history-item">
+              <span><strong>Today</strong><br><span class="muted">08:11</span></span>
+              <span><strong>David Le</strong><br><span class="muted">No note</span></span>
+              <span><span class="balance-pill">14 after</span><br><span class="muted">Admin: owner</span></span>
+            </div>
+            <div class="history-item">
+              <span><strong>Yesterday</strong><br><span class="muted">16:25</span></span>
+              <span><strong>Linh Tran</strong><br><span class="muted">Americano</span></span>
+              <span><span class="balance-pill zero">0 after</span><br><span class="muted">Admin: owner</span></span>
+            </div>
+            <div class="history-item">
+              <span><strong>May 31</strong><br><span class="muted">10:03</span></span>
+              <span><strong>Sarah Vo</strong><br><span class="muted">Iced coffee</span></span>
+              <span><span class="balance-pill">9 after</span><br><span class="muted">Admin: owner</span></span>
+            </div>
+          </div>
+        </section>
+      </div>
+    </section>
+  </main>
+</body>
+</html>

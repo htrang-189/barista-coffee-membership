@@ -62,12 +62,12 @@ Result:
 - Failing: 0
 - Cancelled: 0
 - Skipped: 0
-- Duration: about 20 seconds
+- Duration: about 23 seconds
 
 ## Bugs Found And Fixed
 
 - No implementation defects were found in this QA run.
-- One test assertion was corrected: the rendered page contains the clickable notification popover and fallback click handler, while the periodic bell shake behavior lives in the loaded `/js/admin.js` bundle.
+- No application code fixes were required.
 
 ## Remaining Concerns
 

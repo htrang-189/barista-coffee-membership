@@ -427,6 +427,7 @@ button[disabled] {
 }
 
 .main {
+  min-width: 0;
   padding: 26px;
 }
 
@@ -450,6 +451,7 @@ button[disabled] {
 }
 
 .card {
+  min-width: 0;
   border: 1px solid var(--line);
   border-radius: 8px;
   background: var(--white);
@@ -833,14 +835,35 @@ button[disabled] {
 
 .pagination-row {
   display: grid;
-  grid-template-columns: 1fr auto 1fr;
+  grid-template-columns: auto auto auto;
   align-items: center;
+  justify-content: center;
   gap: 12px;
   margin-top: 16px;
 }
 
+.pagination-row > * {
+  min-width: 0;
+}
+
+.pagination-row > span:empty {
+  display: block;
+  width: 80px;
+  height: 1px;
+}
+
+.pagination-row > :first-child {
+  justify-self: end;
+}
+
 .pagination-row > :last-child {
   justify-self: end;
+}
+
+.pagination-row .button {
+  width: auto;
+  max-width: max-content;
+  flex: 0 0 auto;
 }
 
 .search-row {
@@ -862,6 +885,8 @@ button[disabled] {
 }
 
 .table-wrap {
+  max-width: 100%;
+  min-width: 0;
   overflow-x: auto;
 }
 
@@ -1114,6 +1139,20 @@ a {
   .copy-status {
     min-width: 0;
     padding-bottom: 0;
+  }
+
+  .pagination-row {
+    grid-template-columns: auto auto auto;
+    gap: 8px;
+  }
+
+  .pagination-row > span:empty {
+    width: 72px;
+  }
+
+  .pagination-row .compact-button {
+    min-height: 38px;
+    padding: 0 10px;
   }
 
   .customer-header {

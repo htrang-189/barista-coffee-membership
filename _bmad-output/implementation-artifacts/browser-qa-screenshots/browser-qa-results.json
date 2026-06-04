@@ -1,0 +1,1192 @@
+[
+  {
+    "name": "admin-dashboard",
+    "url": "http://127.0.0.1:3001/admin/dashboard",
+    "desktopShot": "/Users/admin/bmad_/barista-coffee-membership/_bmad-output/implementation-artifacts/browser-qa-screenshots/admin-dashboard-desktop.png",
+    "mobileShot": "/Users/admin/bmad_/barista-coffee-membership/_bmad-output/implementation-artifacts/browser-qa-screenshots/admin-dashboard-mobile.png",
+    "desktopMetrics": {
+      "title": "Owner Dashboard | Barista Coffee Membership",
+      "path": "/admin/dashboard",
+      "viewportWidth": 1366,
+      "bodyScrollWidth": 1366,
+      "docScrollWidth": 1366,
+      "clientWidth": 1366,
+      "hasHorizontalOverflow": false,
+      "rawPlaceholders": [],
+      "pagination": null,
+      "paginationButtons": [],
+      "pageIndicator": null,
+      "pageIndicatorRect": null,
+      "hero": null,
+      "membershipCard": null,
+      "statusPanel": null,
+      "notificationBell": null,
+      "notificationPopover": null,
+      "notificationPopoverHidden": null,
+      "popoverTextVisible": false,
+      "lowBalanceMessageVisible": false,
+      "historySections": [
+        {
+          "text": "",
+          "rect": {
+            "x": 262,
+            "y": 122,
+            "width": 204,
+            "height": 165,
+            "left": 262,
+            "right": 466
+          }
+        },
+        {
+          "text": "",
+          "rect": {
+            "x": 480,
+            "y": 122,
+            "width": 204,
+            "height": 165,
+            "left": 480,
+            "right": 685
+          }
+        },
+        {
+          "text": "",
+          "rect": {
+            "x": 699,
+            "y": 122,
+            "width": 204,
+            "height": 165,
+            "left": 699,
+            "right": 903
+          }
+        },
+        {
+          "text": "",
+          "rect": {
+            "x": 917,
+            "y": 122,
+            "width": 204,
+            "height": 165,
+            "left": 917,
+            "right": 1122
+          }
+        },
+        {
+          "text": "",
+          "rect": {
+            "x": 1136,
+            "y": 122,
+            "width": 204,
+            "height": 165,
+            "left": 1136,
+            "right": 1340
+          }
+        },
+        {
+          "text": "Low balance customers",
+          "rect": {
+            "x": 262,
+            "y": 305,
+            "width": 583,
+            "height": 535,
+            "left": 262,
+            "right": 845
+          }
+        },
+        {
+          "text": "Recent deliveries",
+          "rect": {
+            "x": 863,
+            "y": 305,
+            "width": 477,
+            "height": 535,
+            "left": 863,
+            "right": 1340
+          }
+        }
+      ]
+    },
+    "mobileMetrics": {
+      "title": "Owner Dashboard | Barista Coffee Membership",
+      "path": "/admin/dashboard",
+      "viewportWidth": 390,
+      "bodyScrollWidth": 390,
+      "docScrollWidth": 390,
+      "clientWidth": 390,
+      "hasHorizontalOverflow": false,
+      "rawPlaceholders": [],
+      "pagination": null,
+      "paginationButtons": [],
+      "pageIndicator": null,
+      "pageIndicatorRect": null,
+      "hero": null,
+      "membershipCard": null,
+      "statusPanel": null,
+      "notificationBell": null,
+      "notificationPopover": null,
+      "notificationPopoverHidden": null,
+      "popoverTextVisible": false,
+      "lowBalanceMessageVisible": false,
+      "historySections": [
+        {
+          "text": "",
+          "rect": {
+            "x": 20,
+            "y": 458,
+            "width": 350,
+            "height": 135,
+            "left": 20,
+            "right": 370
+          }
+        },
+        {
+          "text": "",
+          "rect": {
+            "x": 20,
+            "y": 607,
+            "width": 350,
+            "height": 135,
+            "left": 20,
+            "right": 370
+          }
+        },
+        {
+          "text": "",
+          "rect": {
+            "x": 20,
+            "y": 756,
+            "width": 350,
+            "height": 135,
+            "left": 20,
+            "right": 370
+          }
+        },
+        {
+          "text": "",
+          "rect": {
+            "x": 20,
+            "y": 904,
+            "width": 350,
+            "height": 135,
+            "left": 20,
+            "right": 370
+          }
+        },
+        {
+          "text": "",
+          "rect": {
+            "x": 20,
+            "y": 1053,
+            "width": 350,
+            "height": 135,
+            "left": 20,
+            "right": 370
+          }
+        },
+        {
+          "text": "Low balance customers",
+          "rect": {
+            "x": 20,
+            "y": 1205,
+            "width": 350,
+            "height": 249,
+            "left": 20,
+            "right": 370
+          }
+        },
+        {
+          "text": "Recent deliveries",
+          "rect": {
+            "x": 20,
+            "y": 1472,
+            "width": 350,
+            "height": 581,
+            "left": 20,
+            "right": 370
+          }
+        }
+      ]
+    }
+  },
+  {
+    "name": "admin-customers",
+    "url": "http://127.0.0.1:3001/admin/customers",
+    "desktopShot": "/Users/admin/bmad_/barista-coffee-membership/_bmad-output/implementation-artifacts/browser-qa-screenshots/admin-customers-desktop.png",
+    "mobileShot": "/Users/admin/bmad_/barista-coffee-membership/_bmad-output/implementation-artifacts/browser-qa-screenshots/admin-customers-mobile.png",
+    "desktopMetrics": {
+      "title": "Customers | Barista Coffee Membership",
+      "path": "/admin/customers",
+      "viewportWidth": 1366,
+      "bodyScrollWidth": 1366,
+      "docScrollWidth": 1366,
+      "clientWidth": 1366,
+      "hasHorizontalOverflow": false,
+      "rawPlaceholders": [],
+      "pagination": null,
+      "paginationButtons": [],
+      "pageIndicator": null,
+      "pageIndicatorRect": null,
+      "hero": null,
+      "membershipCard": null,
+      "statusPanel": null,
+      "notificationBell": null,
+      "notificationPopover": null,
+      "notificationPopoverHidden": null,
+      "popoverTextVisible": false,
+      "lowBalanceMessageVisible": false,
+      "historySections": [
+        {
+          "text": "",
+          "rect": {
+            "x": 262,
+            "y": 122,
+            "width": 1078,
+            "height": 529,
+            "left": 262,
+            "right": 1340
+          }
+        }
+      ]
+    },
+    "mobileMetrics": {
+      "title": "Customers | Barista Coffee Membership",
+      "path": "/admin/customers",
+      "viewportWidth": 390,
+      "bodyScrollWidth": 390,
+      "docScrollWidth": 390,
+      "clientWidth": 390,
+      "hasHorizontalOverflow": false,
+      "rawPlaceholders": [],
+      "pagination": null,
+      "paginationButtons": [],
+      "pageIndicator": null,
+      "pageIndicatorRect": null,
+      "hero": null,
+      "membershipCard": null,
+      "statusPanel": null,
+      "notificationBell": null,
+      "notificationPopover": null,
+      "notificationPopoverHidden": null,
+      "popoverTextVisible": false,
+      "lowBalanceMessageVisible": false,
+      "historySections": [
+        {
+          "text": "",
+          "rect": {
+            "x": 20,
+            "y": 458,
+            "width": 350,
+            "height": 699,
+            "left": 20,
+            "right": 370
+          }
+        }
+      ]
+    }
+  },
+  {
+    "name": "admin-customers-new",
+    "url": "http://127.0.0.1:3001/admin/customers/new",
+    "desktopShot": "/Users/admin/bmad_/barista-coffee-membership/_bmad-output/implementation-artifacts/browser-qa-screenshots/admin-customers-new-desktop.png",
+    "mobileShot": "/Users/admin/bmad_/barista-coffee-membership/_bmad-output/implementation-artifacts/browser-qa-screenshots/admin-customers-new-mobile.png",
+    "desktopMetrics": {
+      "title": "Add Customer | Barista Coffee Membership",
+      "path": "/admin/customers/new",
+      "viewportWidth": 1366,
+      "bodyScrollWidth": 1366,
+      "docScrollWidth": 1366,
+      "clientWidth": 1366,
+      "hasHorizontalOverflow": false,
+      "rawPlaceholders": [],
+      "pagination": null,
+      "paginationButtons": [],
+      "pageIndicator": null,
+      "pageIndicatorRect": null,
+      "hero": null,
+      "membershipCard": null,
+      "statusPanel": null,
+      "notificationBell": null,
+      "notificationPopover": null,
+      "notificationPopoverHidden": null,
+      "popoverTextVisible": false,
+      "lowBalanceMessageVisible": false,
+      "historySections": [
+        {
+          "text": "",
+          "rect": {
+            "x": 262,
+            "y": 122,
+            "width": 680,
+            "height": 533,
+            "left": 262,
+            "right": 942
+          }
+        }
+      ]
+    },
+    "mobileMetrics": {
+      "title": "Add Customer | Barista Coffee Membership",
+      "path": "/admin/customers/new",
+      "viewportWidth": 390,
+      "bodyScrollWidth": 390,
+      "docScrollWidth": 390,
+      "clientWidth": 390,
+      "hasHorizontalOverflow": false,
+      "rawPlaceholders": [],
+      "pagination": null,
+      "paginationButtons": [],
+      "pageIndicator": null,
+      "pageIndicatorRect": null,
+      "hero": null,
+      "membershipCard": null,
+      "statusPanel": null,
+      "notificationBell": null,
+      "notificationPopover": null,
+      "notificationPopoverHidden": null,
+      "popoverTextVisible": false,
+      "lowBalanceMessageVisible": false,
+      "historySections": [
+        {
+          "text": "",
+          "rect": {
+            "x": 20,
+            "y": 421,
+            "width": 350,
+            "height": 533,
+            "left": 20,
+            "right": 370
+          }
+        }
+      ]
+    }
+  },
+  {
+    "name": "admin-customer-detail",
+    "url": "http://127.0.0.1:3001/admin/customers/4",
+    "desktopShot": "/Users/admin/bmad_/barista-coffee-membership/_bmad-output/implementation-artifacts/browser-qa-screenshots/admin-customer-detail-desktop.png",
+    "mobileShot": "/Users/admin/bmad_/barista-coffee-membership/_bmad-output/implementation-artifacts/browser-qa-screenshots/admin-customer-detail-mobile.png",
+    "desktopMetrics": {
+      "title": "QA Low Balance | Barista Coffee Membership",
+      "path": "/admin/customers/4",
+      "viewportWidth": 1366,
+      "bodyScrollWidth": 1366,
+      "docScrollWidth": 1366,
+      "clientWidth": 1366,
+      "hasHorizontalOverflow": false,
+      "rawPlaceholders": [],
+      "pagination": null,
+      "paginationButtons": [],
+      "pageIndicator": null,
+      "pageIndicatorRect": null,
+      "hero": null,
+      "membershipCard": null,
+      "statusPanel": null,
+      "notificationBell": null,
+      "notificationPopover": null,
+      "notificationPopoverHidden": null,
+      "popoverTextVisible": false,
+      "lowBalanceMessageVisible": false,
+      "historySections": [
+        {
+          "text": "",
+          "rect": {
+            "x": 262,
+            "y": 26,
+            "width": 770,
+            "height": 272,
+            "left": 262,
+            "right": 1032
+          }
+        },
+        {
+          "text": "Record package purchase",
+          "rect": {
+            "x": 262,
+            "y": 316,
+            "width": 530,
+            "height": 372,
+            "left": 262,
+            "right": 792
+          }
+        },
+        {
+          "text": "Package purchase history",
+          "rect": {
+            "x": 810,
+            "y": 316,
+            "width": 530,
+            "height": 372,
+            "left": 810,
+            "right": 1340
+          }
+        },
+        {
+          "text": "Balance link",
+          "rect": {
+            "x": 262,
+            "y": 706,
+            "width": 1078,
+            "height": 273,
+            "left": 262,
+            "right": 1340
+          }
+        },
+        {
+          "text": "Delivery history",
+          "rect": {
+            "x": 262,
+            "y": 997,
+            "width": 1078,
+            "height": 745,
+            "left": 262,
+            "right": 1340
+          }
+        }
+      ]
+    },
+    "mobileMetrics": {
+      "title": "QA Low Balance | Barista Coffee Membership",
+      "path": "/admin/customers/4",
+      "viewportWidth": 390,
+      "bodyScrollWidth": 390,
+      "docScrollWidth": 390,
+      "clientWidth": 390,
+      "hasHorizontalOverflow": false,
+      "rawPlaceholders": [],
+      "pagination": null,
+      "paginationButtons": [],
+      "pageIndicator": null,
+      "pageIndicatorRect": null,
+      "hero": null,
+      "membershipCard": null,
+      "statusPanel": null,
+      "notificationBell": null,
+      "notificationPopover": null,
+      "notificationPopoverHidden": null,
+      "popoverTextVisible": false,
+      "lowBalanceMessageVisible": false,
+      "historySections": [
+        {
+          "text": "",
+          "rect": {
+            "x": 20,
+            "y": 325,
+            "width": 350,
+            "height": 356,
+            "left": 20,
+            "right": 370
+          }
+        },
+        {
+          "text": "Record package purchase",
+          "rect": {
+            "x": 20,
+            "y": 965,
+            "width": 350,
+            "height": 368,
+            "left": 20,
+            "right": 370
+          }
+        },
+        {
+          "text": "Package purchase history",
+          "rect": {
+            "x": 20,
+            "y": 1351,
+            "width": 350,
+            "height": 511,
+            "left": 20,
+            "right": 370
+          }
+        },
+        {
+          "text": "Balance link",
+          "rect": {
+            "x": 20,
+            "y": 1880,
+            "width": 350,
+            "height": 358,
+            "left": 20,
+            "right": 370
+          }
+        },
+        {
+          "text": "Delivery history",
+          "rect": {
+            "x": 20,
+            "y": 2256,
+            "width": 350,
+            "height": 768,
+            "left": 20,
+            "right": 370
+          }
+        }
+      ]
+    }
+  },
+  {
+    "name": "admin-deliveries-page-1",
+    "url": "http://127.0.0.1:3001/admin/deliveries?page=1",
+    "desktopShot": "/Users/admin/bmad_/barista-coffee-membership/_bmad-output/implementation-artifacts/browser-qa-screenshots/admin-deliveries-page-1-desktop.png",
+    "mobileShot": "/Users/admin/bmad_/barista-coffee-membership/_bmad-output/implementation-artifacts/browser-qa-screenshots/admin-deliveries-page-1-mobile.png",
+    "desktopMetrics": {
+      "title": "Delivery History | Barista Coffee Membership",
+      "path": "/admin/deliveries?page=1",
+      "viewportWidth": 1366,
+      "bodyScrollWidth": 1366,
+      "docScrollWidth": 1366,
+      "clientWidth": 1366,
+      "hasHorizontalOverflow": false,
+      "rawPlaceholders": [],
+      "pagination": {
+        "x": 281,
+        "y": 1727,
+        "width": 1040,
+        "height": 42,
+        "left": 281,
+        "right": 1321
+      },
+      "paginationButtons": [
+        {
+          "text": "Older",
+          "rect": {
+            "x": 840,
+            "y": 1727,
+            "width": 74,
+            "height": 42,
+            "left": 840,
+            "right": 914
+          }
+        }
+      ],
+      "pageIndicator": "Page 1",
+      "pageIndicatorRect": {
+        "x": 780,
+        "y": 1736,
+        "width": 48,
+        "height": 23,
+        "left": 780,
+        "right": 828
+      },
+      "hero": null,
+      "membershipCard": null,
+      "statusPanel": null,
+      "notificationBell": null,
+      "notificationPopover": null,
+      "notificationPopoverHidden": null,
+      "popoverTextVisible": false,
+      "lowBalanceMessageVisible": false,
+      "historySections": [
+        {
+          "text": "",
+          "rect": {
+            "x": 262,
+            "y": 122,
+            "width": 1078,
+            "height": 1665,
+            "left": 262,
+            "right": 1340
+          }
+        }
+      ]
+    },
+    "mobileMetrics": {
+      "title": "Delivery History | Barista Coffee Membership",
+      "path": "/admin/deliveries?page=1",
+      "viewportWidth": 390,
+      "bodyScrollWidth": 390,
+      "docScrollWidth": 390,
+      "clientWidth": 390,
+      "hasHorizontalOverflow": false,
+      "rawPlaceholders": [],
+      "pagination": {
+        "x": 39,
+        "y": 2352,
+        "width": 312,
+        "height": 38,
+        "left": 39,
+        "right": 351
+      },
+      "paginationButtons": [
+        {
+          "text": "Older",
+          "rect": {
+            "x": 230,
+            "y": 2352,
+            "width": 66,
+            "height": 38,
+            "left": 230,
+            "right": 296
+          }
+        }
+      ],
+      "pageIndicator": "Page 1",
+      "pageIndicatorRect": {
+        "x": 174,
+        "y": 2360,
+        "width": 48,
+        "height": 23,
+        "left": 174,
+        "right": 222
+      },
+      "hero": null,
+      "membershipCard": null,
+      "statusPanel": null,
+      "notificationBell": null,
+      "notificationPopover": null,
+      "notificationPopoverHidden": null,
+      "popoverTextVisible": false,
+      "lowBalanceMessageVisible": false,
+      "historySections": [
+        {
+          "text": "",
+          "rect": {
+            "x": 20,
+            "y": 421,
+            "width": 350,
+            "height": 1988,
+            "left": 20,
+            "right": 370
+          }
+        }
+      ]
+    }
+  },
+  {
+    "name": "admin-deliveries-page-2",
+    "url": "http://127.0.0.1:3001/admin/deliveries?page=2",
+    "desktopShot": "/Users/admin/bmad_/barista-coffee-membership/_bmad-output/implementation-artifacts/browser-qa-screenshots/admin-deliveries-page-2-desktop.png",
+    "mobileShot": "/Users/admin/bmad_/barista-coffee-membership/_bmad-output/implementation-artifacts/browser-qa-screenshots/admin-deliveries-page-2-mobile.png",
+    "desktopMetrics": {
+      "title": "Delivery History | Barista Coffee Membership",
+      "path": "/admin/deliveries?page=2",
+      "viewportWidth": 1366,
+      "bodyScrollWidth": 1366,
+      "docScrollWidth": 1366,
+      "clientWidth": 1366,
+      "hasHorizontalOverflow": false,
+      "rawPlaceholders": [],
+      "pagination": {
+        "x": 281,
+        "y": 1727,
+        "width": 1040,
+        "height": 42,
+        "left": 281,
+        "right": 1321
+      },
+      "paginationButtons": [
+        {
+          "text": "Newer",
+          "rect": {
+            "x": 687,
+            "y": 1727,
+            "width": 81,
+            "height": 42,
+            "left": 687,
+            "right": 768
+          }
+        },
+        {
+          "text": "Older",
+          "rect": {
+            "x": 842,
+            "y": 1727,
+            "width": 74,
+            "height": 42,
+            "left": 842,
+            "right": 915
+          }
+        }
+      ],
+      "pageIndicator": "Page 2",
+      "pageIndicatorRect": {
+        "x": 780,
+        "y": 1736,
+        "width": 50,
+        "height": 23,
+        "left": 780,
+        "right": 830
+      },
+      "hero": null,
+      "membershipCard": null,
+      "statusPanel": null,
+      "notificationBell": null,
+      "notificationPopover": null,
+      "notificationPopoverHidden": null,
+      "popoverTextVisible": false,
+      "lowBalanceMessageVisible": false,
+      "historySections": [
+        {
+          "text": "",
+          "rect": {
+            "x": 262,
+            "y": 122,
+            "width": 1078,
+            "height": 1665,
+            "left": 262,
+            "right": 1340
+          }
+        }
+      ]
+    },
+    "mobileMetrics": {
+      "title": "Delivery History | Barista Coffee Membership",
+      "path": "/admin/deliveries?page=2",
+      "viewportWidth": 390,
+      "bodyScrollWidth": 390,
+      "docScrollWidth": 390,
+      "clientWidth": 390,
+      "hasHorizontalOverflow": false,
+      "rawPlaceholders": [],
+      "pagination": {
+        "x": 39,
+        "y": 2352,
+        "width": 312,
+        "height": 38,
+        "left": 39,
+        "right": 351
+      },
+      "paginationButtons": [
+        {
+          "text": "Newer",
+          "rect": {
+            "x": 93,
+            "y": 2352,
+            "width": 73,
+            "height": 38,
+            "left": 93,
+            "right": 166
+          }
+        },
+        {
+          "text": "Older",
+          "rect": {
+            "x": 232,
+            "y": 2352,
+            "width": 66,
+            "height": 38,
+            "left": 232,
+            "right": 297
+          }
+        }
+      ],
+      "pageIndicator": "Page 2",
+      "pageIndicatorRect": {
+        "x": 174,
+        "y": 2360,
+        "width": 50,
+        "height": 23,
+        "left": 174,
+        "right": 224
+      },
+      "hero": null,
+      "membershipCard": null,
+      "statusPanel": null,
+      "notificationBell": null,
+      "notificationPopover": null,
+      "notificationPopoverHidden": null,
+      "popoverTextVisible": false,
+      "lowBalanceMessageVisible": false,
+      "historySections": [
+        {
+          "text": "",
+          "rect": {
+            "x": 20,
+            "y": 421,
+            "width": 350,
+            "height": 1988,
+            "left": 20,
+            "right": 370
+          }
+        }
+      ]
+    }
+  },
+  {
+    "name": "customer-login",
+    "url": "http://127.0.0.1:3001/customer/login",
+    "desktopShot": "/Users/admin/bmad_/barista-coffee-membership/_bmad-output/implementation-artifacts/browser-qa-screenshots/customer-login-desktop.png",
+    "mobileShot": "/Users/admin/bmad_/barista-coffee-membership/_bmad-output/implementation-artifacts/browser-qa-screenshots/customer-login-mobile.png",
+    "desktopMetrics": {
+      "title": "Customer Login | Barista Coffee Membership",
+      "path": "/customer/login",
+      "viewportWidth": 1366,
+      "bodyScrollWidth": 1366,
+      "docScrollWidth": 1366,
+      "clientWidth": 1366,
+      "hasHorizontalOverflow": false,
+      "rawPlaceholders": [],
+      "pagination": null,
+      "paginationButtons": [],
+      "pageIndicator": null,
+      "pageIndicatorRect": null,
+      "hero": null,
+      "membershipCard": null,
+      "statusPanel": null,
+      "notificationBell": null,
+      "notificationPopover": null,
+      "notificationPopoverHidden": null,
+      "popoverTextVisible": false,
+      "lowBalanceMessageVisible": false,
+      "historySections": []
+    },
+    "mobileMetrics": {
+      "title": "Customer Login | Barista Coffee Membership",
+      "path": "/customer/login",
+      "viewportWidth": 390,
+      "bodyScrollWidth": 390,
+      "docScrollWidth": 390,
+      "clientWidth": 390,
+      "hasHorizontalOverflow": false,
+      "rawPlaceholders": [],
+      "pagination": null,
+      "paginationButtons": [],
+      "pageIndicator": null,
+      "pageIndicatorRect": null,
+      "hero": null,
+      "membershipCard": null,
+      "statusPanel": null,
+      "notificationBell": null,
+      "notificationPopover": null,
+      "notificationPopoverHidden": null,
+      "popoverTextVisible": false,
+      "lowBalanceMessageVisible": false,
+      "historySections": []
+    }
+  },
+  {
+    "name": "customer-balance",
+    "url": "http://127.0.0.1:3001/customer/balance",
+    "desktopShot": "/Users/admin/bmad_/barista-coffee-membership/_bmad-output/implementation-artifacts/browser-qa-screenshots/customer-balance-desktop.png",
+    "mobileShot": "/Users/admin/bmad_/barista-coffee-membership/_bmad-output/implementation-artifacts/browser-qa-screenshots/customer-balance-mobile.png",
+    "desktopMetrics": {
+      "title": "My Balance | Barista Coffee Membership",
+      "path": "/customer/balance",
+      "viewportWidth": 1366,
+      "bodyScrollWidth": 1366,
+      "docScrollWidth": 1366,
+      "clientWidth": 1366,
+      "hasHorizontalOverflow": false,
+      "rawPlaceholders": [],
+      "pagination": null,
+      "paginationButtons": [],
+      "pageIndicator": null,
+      "pageIndicatorRect": null,
+      "hero": {
+        "x": 131,
+        "y": 96,
+        "width": 1104,
+        "height": 378,
+        "left": 131,
+        "right": 1235
+      },
+      "membershipCard": {
+        "x": 131,
+        "y": 96,
+        "width": 730,
+        "height": 378,
+        "left": 131,
+        "right": 861
+      },
+      "statusPanel": {
+        "x": 883,
+        "y": 96,
+        "width": 352,
+        "height": 378,
+        "left": 883,
+        "right": 1235
+      },
+      "notificationBell": {
+        "x": 1082,
+        "y": 24,
+        "width": 54,
+        "height": 54,
+        "left": 1082,
+        "right": 1136
+      },
+      "notificationPopover": {
+        "x": 812,
+        "y": 84,
+        "width": 320,
+        "height": 155,
+        "left": 812,
+        "right": 1132
+      },
+      "notificationPopoverHidden": false,
+      "popoverTextVisible": true,
+      "lowBalanceMessageVisible": true,
+      "historySections": [
+        {
+          "text": "Package history",
+          "rect": {
+            "x": 131,
+            "y": 711,
+            "width": 542,
+            "height": 715,
+            "left": 131,
+            "right": 673
+          }
+        },
+        {
+          "text": "Cup history",
+          "rect": {
+            "x": 693,
+            "y": 711,
+            "width": 542,
+            "height": 715,
+            "left": 693,
+            "right": 1235
+          }
+        }
+      ]
+    },
+    "mobileMetrics": {
+      "title": "My Balance | Barista Coffee Membership",
+      "path": "/customer/balance",
+      "viewportWidth": 390,
+      "bodyScrollWidth": 390,
+      "docScrollWidth": 390,
+      "clientWidth": 390,
+      "hasHorizontalOverflow": false,
+      "rawPlaceholders": [],
+      "pagination": null,
+      "paginationButtons": [],
+      "pageIndicator": null,
+      "pageIndicatorRect": null,
+      "hero": {
+        "x": 20,
+        "y": 146,
+        "width": 350,
+        "height": 942,
+        "left": 20,
+        "right": 370
+      },
+      "membershipCard": {
+        "x": 44,
+        "y": 170,
+        "width": 302,
+        "height": 555,
+        "left": 44,
+        "right": 346
+      },
+      "statusPanel": {
+        "x": 44,
+        "y": 747,
+        "width": 302,
+        "height": 317,
+        "left": 44,
+        "right": 346
+      },
+      "notificationBell": {
+        "x": 16,
+        "y": 74,
+        "width": 53,
+        "height": 53,
+        "left": 16,
+        "right": 70
+      },
+      "notificationPopover": {
+        "x": -254,
+        "y": 134,
+        "width": 320,
+        "height": 155,
+        "left": -254,
+        "right": 66
+      },
+      "notificationPopoverHidden": false,
+      "popoverTextVisible": true,
+      "lowBalanceMessageVisible": true,
+      "historySections": [
+        {
+          "text": "Package history",
+          "rect": {
+            "x": 20,
+            "y": 1413,
+            "width": 350,
+            "height": 594,
+            "left": 20,
+            "right": 370
+          }
+        },
+        {
+          "text": "Cup history",
+          "rect": {
+            "x": 20,
+            "y": 2027,
+            "width": 350,
+            "height": 915,
+            "left": 20,
+            "right": 370
+          }
+        }
+      ]
+    }
+  },
+  {
+    "name": "customer-access-token",
+    "url": "http://127.0.0.1:3001/customer/access/AGBOhz5j9RBQgHFhfW_JDiqr9ut_IF_NibcD1F2Idl8",
+    "desktopShot": "/Users/admin/bmad_/barista-coffee-membership/_bmad-output/implementation-artifacts/browser-qa-screenshots/customer-access-token-desktop.png",
+    "mobileShot": "/Users/admin/bmad_/barista-coffee-membership/_bmad-output/implementation-artifacts/browser-qa-screenshots/customer-access-token-mobile.png",
+    "desktopMetrics": {
+      "title": "My Balance | Barista Coffee Membership",
+      "path": "/customer/access/AGBOhz5j9RBQgHFhfW_JDiqr9ut_IF_NibcD1F2Idl8",
+      "viewportWidth": 1366,
+      "bodyScrollWidth": 1366,
+      "docScrollWidth": 1366,
+      "clientWidth": 1366,
+      "hasHorizontalOverflow": false,
+      "rawPlaceholders": [],
+      "pagination": null,
+      "paginationButtons": [],
+      "pageIndicator": null,
+      "pageIndicatorRect": null,
+      "hero": {
+        "x": 131,
+        "y": 96,
+        "width": 1104,
+        "height": 378,
+        "left": 131,
+        "right": 1235
+      },
+      "membershipCard": {
+        "x": 131,
+        "y": 96,
+        "width": 730,
+        "height": 378,
+        "left": 131,
+        "right": 861
+      },
+      "statusPanel": {
+        "x": 883,
+        "y": 96,
+        "width": 352,
+        "height": 378,
+        "left": 883,
+        "right": 1235
+      },
+      "notificationBell": {
+        "x": 1185,
+        "y": 24,
+        "width": 54,
+        "height": 54,
+        "left": 1185,
+        "right": 1239
+      },
+      "notificationPopover": {
+        "x": 915,
+        "y": 84,
+        "width": 320,
+        "height": 155,
+        "left": 915,
+        "right": 1235
+      },
+      "notificationPopoverHidden": false,
+      "popoverTextVisible": true,
+      "lowBalanceMessageVisible": true,
+      "historySections": [
+        {
+          "text": "Package history",
+          "rect": {
+            "x": 131,
+            "y": 711,
+            "width": 542,
+            "height": 715,
+            "left": 131,
+            "right": 673
+          }
+        },
+        {
+          "text": "Cup history",
+          "rect": {
+            "x": 693,
+            "y": 711,
+            "width": 542,
+            "height": 715,
+            "left": 693,
+            "right": 1235
+          }
+        }
+      ]
+    },
+    "mobileMetrics": {
+      "title": "My Balance | Barista Coffee Membership",
+      "path": "/customer/access/AGBOhz5j9RBQgHFhfW_JDiqr9ut_IF_NibcD1F2Idl8",
+      "viewportWidth": 390,
+      "bodyScrollWidth": 390,
+      "docScrollWidth": 390,
+      "clientWidth": 390,
+      "hasHorizontalOverflow": false,
+      "rawPlaceholders": [],
+      "pagination": null,
+      "paginationButtons": [],
+      "pageIndicator": null,
+      "pageIndicatorRect": null,
+      "hero": {
+        "x": 20,
+        "y": 146,
+        "width": 350,
+        "height": 942,
+        "left": 20,
+        "right": 370
+      },
+      "membershipCard": {
+        "x": 44,
+        "y": 170,
+        "width": 302,
+        "height": 555,
+        "left": 44,
+        "right": 346
+      },
+      "statusPanel": {
+        "x": 44,
+        "y": 747,
+        "width": 302,
+        "height": 317,
+        "left": 44,
+        "right": 346
+      },
+      "notificationBell": {
+        "x": 16,
+        "y": 74,
+        "width": 53,
+        "height": 53,
+        "left": 16,
+        "right": 70
+      },
+      "notificationPopover": {
+        "x": -254,
+        "y": 134,
+        "width": 320,
+        "height": 155,
+        "left": -254,
+        "right": 66
+      },
+      "notificationPopoverHidden": false,
+      "popoverTextVisible": true,
+      "lowBalanceMessageVisible": true,
+      "historySections": [
+        {
+          "text": "Package history",
+          "rect": {
+            "x": 20,
+            "y": 1413,
+            "width": 350,
+            "height": 594,
+            "left": 20,
+            "right": 370
+          }
+        },
+        {
+          "text": "Cup history",
+          "rect": {
+            "x": 20,
+            "y": 2027,
+            "width": 350,
+            "height": 915,
+            "left": 20,
+            "right": 370
+          }
+        }
+      ]
+    }
+  }
+]

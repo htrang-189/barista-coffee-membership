@@ -1,11 +1,13 @@
 const express = require('express');
 const fs = require('fs');
 const path = require('path');
+const QRCode = require('qrcode');
 
 const { authenticateAdmin } = require('../models/admin-user');
 const {
   createCustomerAccount,
   findCustomerById,
+  rotateCustomerBalanceAccessToken,
   searchCustomers
 } = require('../models/customer-account');
 const {
@@ -15,13 +17,17 @@ const {
 const {
   listDeliveriesForCustomer,
   listRecentDeliveries,
-  recordDelivery
+  recordDelivery,
+  voidDelivery
 } = require('../models/delivery-history');
 const { getDashboardMetrics } = require('../models/dashboard');
+const { formatVndFromCents } = require('../models/currency');
 const { redirectAuthenticatedAdmin, requireAdmin } = require('../middleware/auth');
 const { requireCsrfToken } = require('../middleware/csrf');
 
 const router = express.Router();
+const HISTORY_PREVIEW_LIMIT = 5;
+const ADMIN_DELIVERIES_PAGE_SIZE = 25;
 
 function escapeHtml(value) {
   return String(value || '')
@@ -33,7 +39,7 @@ function escapeHtml(value) {
 }
 
 function formatMoney(cents) {
-  return `$${((cents || 0) / 100).toFixed(2)}`;
+  return formatVndFromCents(cents);
 }
 
 function formatDate(value) {
@@ -137,11 +143,36 @@ function pageMessage(query) {
     return '<div class="success-box">Delivery recorded and balance updated.</div>';
   }
 
+  if (query.delivery === 'voided') {
+    return '<div class="success-box">Delivery voided and cups restored.</div>';
+  }
+
+  if (query.link === 'regenerated') {
+    return '<div class="success-box">Customer balance link regenerated.</div>';
+  }
+
   if (query.error === 'zero-balance') {
     return '<div class="error-box">Cannot record delivery because the current balance is 0.</div>';
   }
 
+  if (query.error === 'insufficient-balance') {
+    return '<div class="error-box">Cannot record delivery because the quantity is greater than the current balance.</div>';
+  }
+
+  if (query.error === 'invalid-quantity') {
+    return '<div class="error-box">Delivery quantity must be a positive whole number.</div>';
+  }
+
+  if (query.error === 'already-voided') {
+    return '<div class="error-box">This delivery has already been voided.</div>';
+  }
+
   return '';
+}
+
+function buildCustomerBalanceAccessUrl(request, customer) {
+  const origin = `${request.protocol}://${request.get('host')}`;
+  return new URL(`/customer/access/${customer.balance_access_token}`, origin).toString();
 }
 
 function renderCustomerRows(customers) {
@@ -167,12 +198,23 @@ function renderCustomerRows(customers) {
     .join('');
 }
 
-function renderPackageHistory(purchases) {
-  if (purchases.length === 0) {
-    return '<p class="empty-state">No package purchases recorded yet.</p>';
+function renderViewAllAction(href) {
+  if (!href) {
+    return '';
   }
 
-  return `<ul class="list">${purchases
+  return `<div class="history-actions"><a class="button secondary compact-button" href="${href}">View All</a></div>`;
+}
+
+function renderPackageHistory(purchases, options) {
+  const renderOptions = options || {};
+  const visiblePurchases = renderOptions.limit ? purchases.slice(0, renderOptions.limit) : purchases;
+
+  if (purchases.length === 0) {
+    return `<p class="empty-state">No package purchases recorded yet.</p>${renderViewAllAction(renderOptions.viewAllHref)}`;
+  }
+
+  return `<ul class="list">${visiblePurchases
     .map(function buildPurchaseItem(purchase) {
       return `<li class="list-item">
         <span><strong>${purchase.package_size}-cup package</strong><br>
@@ -181,24 +223,39 @@ function renderPackageHistory(purchases) {
         <span class="muted">${formatDate(purchase.created_at)} by ${escapeHtml(purchase.admin_username)}</span></span>
       </li>`;
     })
-    .join('')}</ul>`;
+    .join('')}</ul>${renderViewAllAction(renderOptions.viewAllHref)}`;
 }
 
-function renderDeliveryHistory(deliveries) {
+function renderDeliveryHistory(deliveries, options) {
+  const renderOptions = options || {};
+  const visibleDeliveries = renderOptions.limit ? deliveries.slice(0, renderOptions.limit) : deliveries;
+
   if (deliveries.length === 0) {
-    return '<p class="empty-state">No deliveries recorded yet.</p>';
+    return `<p class="empty-state">No deliveries recorded yet.</p>${renderViewAllAction(renderOptions.viewAllHref)}`;
   }
 
-  return `<ul class="list">${deliveries
+  return `<ul class="list">${visibleDeliveries
     .map(function buildDeliveryItem(delivery) {
+      const isVoided = Boolean(delivery.voided_at);
+      const voidedNote = isVoided
+        ? `<br><span class="void-label">Voided${delivery.voided_by_admin_username ? ` by ${escapeHtml(delivery.voided_by_admin_username)}` : ''}</span>`
+        : '';
+      const voidAction = isVoided
+        ? ''
+        : `<form method="post" action="/admin/deliveries/${delivery.id}/void">
+          <input type="hidden" name="csrfToken" value="{{CSRF_TOKEN}}">
+          <button class="button secondary compact-button" type="submit">Void delivery</button>
+        </form>`;
+
       return `<li class="list-item">
-        <span><strong>${delivery.delivered_cups} cup delivered</strong><br>
+        <span><strong>${delivery.delivered_cups} cup${delivery.delivered_cups === 1 ? '' : 's'} delivered</strong>${voidedNote}<br>
         <span class="muted">${escapeHtml(delivery.note || 'No note')}</span></span>
         <span>${formatDate(delivery.delivery_date)}<br>
-        <span class="muted">${delivery.balance_after} after by ${escapeHtml(delivery.admin_username)}</span></span>
+        <span class="muted">${delivery.balance_after} after by ${escapeHtml(delivery.admin_username)}</span>
+        ${voidAction}</span>
       </li>`;
     })
-    .join('')}</ul>`;
+    .join('')}</ul>${renderViewAllAction(renderOptions.viewAllHref)}`;
 }
 
 router.get('/login', redirectAuthenticatedAdmin, function showLogin(request, response) {
@@ -279,7 +336,7 @@ router.get('/dashboard', requireAdmin, async function showDashboard(request, res
             return `<li class="list-item">
               <span><strong><a href="/admin/customers/${delivery.customer_id}">${escapeHtml(delivery.customer_name)}</a></strong><br>
               <span class="muted">${escapeHtml(delivery.note || 'No note')}</span></span>
-              <span>${formatDate(delivery.delivery_date)}<br><span class="muted">${delivery.balance_after} after</span></span>
+              <span>${delivery.delivered_cups} cup${delivery.delivered_cups === 1 ? '' : 's'}<br><span class="muted">${delivery.balance_after} after</span></span>
             </li>`;
           })
           .join('')
@@ -304,7 +361,7 @@ router.get('/dashboard', requireAdmin, async function showDashboard(request, res
       </div>
       <div class="content-grid">
         <section class="card"><h2>Low balance customers</h2><div class="table-wrap"><table><thead><tr><th>Customer</th><th>Phone</th><th>Balance</th></tr></thead><tbody>${lowBalanceRows}</tbody></table></div></section>
-        <section class="card"><h2>Recent deliveries</h2><ul class="list">${recentRows}</ul></section>
+        <section class="card"><h2>Recent deliveries</h2><ul class="list">${recentRows}</ul><div class="history-actions"><a class="button secondary compact-button" href="/admin/deliveries">View all deliveries</a></div></section>
       </div>`
     });
   } catch (error) {
@@ -392,6 +449,62 @@ router.post('/customers', requireAdmin, requireCsrfToken, async function createC
   }
 });
 
+router.get('/customers/:customerId/package-purchases', requireAdmin, async function showCustomerPackageHistory(request, response, next) {
+  try {
+    const customerId = Number(request.params.customerId);
+    const customer = await findCustomerById(request.app.locals.database, customerId);
+
+    if (!customer) {
+      response.status(404).send('Customer not found.');
+      return;
+    }
+
+    const purchases = await listPackagePurchasesForCustomer(request.app.locals.database, customerId);
+
+    renderAdminPage(response, {
+      active: 'customers',
+      title: `${customer.name} Package History`,
+      body: `<div class="topbar">
+        <div><p class="eyebrow">Newest first</p><h1>Package purchase history</h1></div>
+        <a class="button secondary" href="/admin/customers/${customer.id}">Back to customer</a>
+      </div>
+      <section class="card">
+        ${renderPackageHistory(purchases)}
+      </section>`
+    });
+  } catch (error) {
+    next(error);
+  }
+});
+
+router.get('/customers/:customerId/deliveries', requireAdmin, async function showCustomerDeliveryHistory(request, response, next) {
+  try {
+    const customerId = Number(request.params.customerId);
+    const customer = await findCustomerById(request.app.locals.database, customerId);
+
+    if (!customer) {
+      response.status(404).send('Customer not found.');
+      return;
+    }
+
+    const deliveries = await listDeliveriesForCustomer(request.app.locals.database, customerId);
+
+    renderAdminPage(response, {
+      active: 'customers',
+      title: `${customer.name} Delivery History`,
+      body: `<div class="topbar">
+        <div><p class="eyebrow">Newest first</p><h1>Delivery history</h1></div>
+        <a class="button secondary" href="/admin/customers/${customer.id}">Back to customer</a>
+      </div>
+      <section class="card">
+        ${renderDeliveryHistory(deliveries).replaceAll('{{CSRF_TOKEN}}', escapeHtml(response.locals.csrfToken))}
+      </section>`
+    });
+  } catch (error) {
+    next(error);
+  }
+});
+
 router.get('/customers/:customerId', requireAdmin, async function showCustomerDetail(request, response, next) {
   try {
     const customerId = Number(request.params.customerId);
@@ -405,6 +518,13 @@ router.get('/customers/:customerId', requireAdmin, async function showCustomerDe
     const purchases = await listPackagePurchasesForCustomer(request.app.locals.database, customerId);
     const deliveries = await listDeliveriesForCustomer(request.app.locals.database, customerId);
     const balance = Number(customer.current_balance || 0);
+    const balanceAccessUrl = buildCustomerBalanceAccessUrl(request, customer);
+    const balanceAccessQrSvg = await QRCode.toString(balanceAccessUrl, {
+      errorCorrectionLevel: 'M',
+      margin: 1,
+      type: 'svg',
+      width: 180
+    });
     const deliveryDisabled = balance <= 0 ? ' disabled' : '';
     const zeroWarning = balance <= 0
       ? '<div class="warning-strip">A package purchase is needed before delivery can be recorded.</div>'
@@ -423,10 +543,11 @@ router.get('/customers/:customerId', requireAdmin, async function showCustomerDe
           <p><strong>Phone:</strong> ${escapeHtml(customer.phone)}<br>
           <strong>Email:</strong> ${escapeHtml(customer.email || '-')}<br>
           <strong>Login identifier:</strong> ${escapeHtml(customer.login_identifier)}</p>
-          <form class="inline-form" method="post" action="/admin/customers/${customer.id}/deliveries" data-loading-form>
+          <form class="inline-form delivery-form" method="post" action="/admin/customers/${customer.id}/deliveries" data-loading-form>
             <input type="hidden" name="csrfToken" value="${escapeHtml(response.locals.csrfToken)}">
+            <input name="deliveredCups" type="number" min="1" max="${balance}" step="1" value="1" aria-label="Delivered cups"${deliveryDisabled}>
             <input name="note" placeholder="Optional delivery note"${deliveryDisabled}>
-            <button class="button warning" type="submit"${deliveryDisabled}>Record 1 cup delivery</button>
+            <button class="button warning" type="submit"${deliveryDisabled}>Record delivery</button>
           </form>
         </section>
         <section class="balance-card">
@@ -441,28 +562,82 @@ router.get('/customers/:customerId', requireAdmin, async function showCustomerDe
           <h2>Record package purchase</h2>
           <form class="form" method="post" action="/admin/customers/${customer.id}/package-purchases" data-loading-form>
             <input type="hidden" name="csrfToken" value="${escapeHtml(response.locals.csrfToken)}">
-            <label>Package size
+            <label>Purchased cups
               <select name="packageSize" data-package-size>
-                <option value="10">10 cups + 1 bonus = 11 total</option>
-                <option value="20">20 cups + 2 bonus = 22 total</option>
-                <option value="30">30 cups + 0 bonus = 30 total</option>
+                <option value="10">10 purchased cups</option>
+                <option value="20">20 purchased cups</option>
+                <option value="30">30 purchased cups</option>
               </select>
             </label>
-            <label>Amount paid <input name="amountPaid" placeholder="0.00"></label>
-            <div class="calc-box" data-package-preview>10 package cups + 1 bonus cup = 11 total cups</div>
+            <div class="calc-box" data-package-preview>
+              <span>Purchased cups: 10</span>
+              <span>Calculated amount paid: 300.000 ₫</span>
+              <span>Customer receives 1 bonus cup</span>
+              <span>Total credited: 11 cups</span>
+            </div>
             <button class="button" type="submit">Save package purchase</button>
           </form>
         </section>
         <section class="card">
           <h2>Package purchase history</h2>
-          ${renderPackageHistory(purchases)}
+          ${renderPackageHistory(purchases, {
+            limit: HISTORY_PREVIEW_LIMIT,
+            viewAllHref: `/admin/customers/${customer.id}/package-purchases`
+          })}
         </section>
       </div>
       <section class="card section-gap">
+        <div class="access-link-layout">
+          <div>
+            <p class="eyebrow">Customer access</p>
+            <h2>Balance link</h2>
+            <p class="muted">Share this read-only link or QR code with the customer.</p>
+            <div class="share-link-row">
+              <label class="share-link-field">Shareable link
+                <input readonly value="${escapeHtml(balanceAccessUrl)}" data-balance-link>
+              </label>
+              <button class="button secondary compact-button" type="button" data-copy-text="${escapeHtml(balanceAccessUrl)}" data-copy-confirmation="Copied">Copy link</button>
+              <span class="copy-status" data-copy-status aria-live="polite"></span>
+            </div>
+            <div class="actions section-actions access-actions">
+              <button class="button secondary compact-button" type="button" data-toggle-target="customer-qr-${customer.id}">Show QR code</button>
+              <form method="post" action="/admin/customers/${customer.id}/balance-link/regenerate">
+                <input type="hidden" name="csrfToken" value="${escapeHtml(response.locals.csrfToken)}">
+                <button class="button warning compact-button" type="submit">Regenerate link</button>
+              </form>
+            </div>
+          </div>
+          <aside class="qr-card" id="customer-qr-${customer.id}" hidden>
+            <p class="metric-label">Customer QR code</p>
+            <div class="qr-code">${balanceAccessQrSvg}</div>
+          </aside>
+        </div>
+      </section>
+      <section class="card section-gap">
         <h2>Delivery history</h2>
-        ${renderDeliveryHistory(deliveries)}
+        ${renderDeliveryHistory(deliveries, {
+          limit: HISTORY_PREVIEW_LIMIT,
+          viewAllHref: `/admin/customers/${customer.id}/deliveries`
+        }).replaceAll('{{CSRF_TOKEN}}', escapeHtml(response.locals.csrfToken))}
       </section>`
     });
+  } catch (error) {
+    next(error);
+  }
+});
+
+router.post('/customers/:customerId/balance-link/regenerate', requireAdmin, requireCsrfToken, async function regenerateBalanceLink(request, response, next) {
+  try {
+    const customerId = Number(request.params.customerId);
+    const customer = await findCustomerById(request.app.locals.database, customerId);
+
+    if (!customer) {
+      response.status(404).send('Customer not found.');
+      return;
+    }
+
+    await rotateCustomerBalanceAccessToken(request.app.locals.database, customerId);
+    response.redirect(`/admin/customers/${customerId}?link=regenerated`);
   } catch (error) {
     next(error);
   }
@@ -474,7 +649,6 @@ router.post('/customers/:customerId/package-purchases', requireAdmin, requireCsr
       request.app.locals.database,
       Number(request.params.customerId),
       Number(request.body.packageSize),
-      request.body.amountPaid,
       request.session.user.id
     );
     response.redirect(`/admin/customers/${request.params.customerId}?package=saved`);
@@ -488,6 +662,7 @@ router.post('/customers/:customerId/deliveries', requireAdmin, requireCsrfToken,
     await recordDelivery(
       request.app.locals.database,
       Number(request.params.customerId),
+      request.body.deliveredCups,
       request.session.user.id,
       request.body.note
     );
@@ -498,23 +673,61 @@ router.post('/customers/:customerId/deliveries', requireAdmin, requireCsrfToken,
       return;
     }
 
+    if (error.code === 'INSUFFICIENT_BALANCE') {
+      response.redirect(`/admin/customers/${request.params.customerId}?error=insufficient-balance`);
+      return;
+    }
+
+    if (error.code === 'INVALID_DELIVERY_QUANTITY') {
+      response.redirect(`/admin/customers/${request.params.customerId}?error=invalid-quantity`);
+      return;
+    }
+
+    next(error);
+  }
+});
+
+router.post('/deliveries/:deliveryId/void', requireAdmin, requireCsrfToken, async function voidDeliveryRoute(request, response, next) {
+  try {
+    const result = await voidDelivery(
+      request.app.locals.database,
+      Number(request.params.deliveryId),
+      request.session.user.id
+    );
+
+    response.redirect(`/admin/customers/${result.customerId}?delivery=voided`);
+  } catch (error) {
+    if (error.code === 'DELIVERY_ALREADY_VOIDED') {
+      response.redirect('/admin/deliveries?error=already-voided');
+      return;
+    }
+
     next(error);
   }
 });
 
 router.get('/deliveries', requireAdmin, async function showDeliveries(request, response, next) {
   try {
-    const deliveries = await listRecentDeliveries(request.app.locals.database, 50);
+    const currentPage = Math.max(Number.parseInt(request.query.page || '1', 10) || 1, 1);
+    const offset = (currentPage - 1) * ADMIN_DELIVERIES_PAGE_SIZE;
+    const deliveriesPlusOne = await listRecentDeliveries(request.app.locals.database, ADMIN_DELIVERIES_PAGE_SIZE + 1, offset);
+    const hasNextPage = deliveriesPlusOne.length > ADMIN_DELIVERIES_PAGE_SIZE;
+    const deliveries = deliveriesPlusOne.slice(0, ADMIN_DELIVERIES_PAGE_SIZE);
+    const pagination = `<div class="pagination-row">
+      ${currentPage > 1 ? `<a class="button secondary compact-button" href="/admin/deliveries?page=${currentPage - 1}">Newer</a>` : '<span></span>'}
+      <span class="muted">Page ${currentPage}</span>
+      ${hasNextPage ? `<a class="button secondary compact-button" href="/admin/deliveries?page=${currentPage + 1}">Older</a>` : '<span></span>'}
+    </div>`;
     const rows = deliveries.length
       ? deliveries
           .map(function buildDeliveryRow(delivery) {
             return `<tr>
               <td>${formatDate(delivery.delivery_date)}</td>
               <td><a href="/admin/customers/${delivery.customer_id}"><strong>${escapeHtml(delivery.customer_name)}</strong></a></td>
-              <td>${delivery.delivered_cups}</td>
+              <td>${delivery.delivered_cups}${delivery.voided_at ? ' (voided)' : ''}</td>
               <td><span class="${balanceClass(delivery.balance_after)}">${delivery.balance_after} after</span></td>
               <td>${escapeHtml(delivery.admin_username)}</td>
-              <td>${escapeHtml(delivery.note || '-')}</td>
+              <td>${escapeHtml(delivery.note || '-')}${delivery.voided_at ? '<br><span class="void-label">Voided</span>' : ''}</td>
             </tr>`;
           })
           .join('')
@@ -523,7 +736,8 @@ router.get('/deliveries', requireAdmin, async function showDeliveries(request, r
     renderAdminPage(response, {
       active: 'deliveries',
       title: 'Delivery History',
-      body: `<div class="topbar"><div><p class="eyebrow">Newest first</p><h1>Delivery history</h1></div></div>
+      body: `${pageMessage(request.query)}
+      <div class="topbar"><div><p class="eyebrow">Newest first</p><h1>Delivery history</h1></div></div>
       <section class="card">
         <div class="table-wrap">
           <table>
@@ -531,6 +745,7 @@ router.get('/deliveries', requireAdmin, async function showDeliveries(request, r
             <tbody>${rows}</tbody>
           </table>
         </div>
+        ${pagination}
       </section>`
     });
   } catch (error) {

@@ -2,13 +2,13 @@
 
 Date: 2026-06-01
 Project: barista-coffee-membership
-Status: Draft - Aligned with Project Context
+Status: Draft - Reconciled with Current Implementation And QA Gate
 
 ## 1. Architecture Summary
 
 Barista Coffee Membership is a small authenticated full-stack web application for a single coffee shop. It uses vanilla HTML/CSS/JavaScript on the frontend, Node.js v22.x with Express.js v4.x on the backend, SQLite3 for file-based persistence, bcrypt for password hashing, and express-session for admin/customer sessions.
 
-The Project Context is the primary source of truth. This architecture intentionally does not use Next.js, TypeScript, Tailwind, Prisma, private customer links, or a ledger-only transaction model because those are superseded by the reconciled Project Context and updated planning artifacts.
+The current working application and latest QA gate are the source of truth for this reconciled architecture. This architecture intentionally does not use Next.js, TypeScript, Tailwind, Prisma, or a ledger-only transaction model because those are superseded by the reconciled Project Context and implemented application.
 
 The application is designed for low maintenance, simple local setup, low-cost deployment, and clear implementation by a small team.
 
@@ -41,6 +41,7 @@ Key dependencies:
 - `bcrypt`
 - `express-session`
 - `dotenv`
+- `qrcode`
 
 Recommended dev/test dependencies:
 
@@ -59,7 +60,11 @@ Recommended dev/test dependencies:
 - Enforce admin/customer access separation server-side.
 - Protect balance integrity with database transactions.
 - Support package sizes `10`, `20`, and `30` only.
-- Apply package credits exactly: `10 -> 11`, `20 -> 22`, `30 -> 30`.
+- Apply package credits exactly: `10 -> 11`, `20 -> 22`, `30 -> 33`.
+- Calculate package revenue at `30.000 ₫` per purchased cup.
+- Support multi-cup delivery recording and void/cancel correction.
+- Support read-only QR/share balance links.
+- Keep history previews compact with `View All` full-history pages.
 - Support package purchase history, delivery recording, delivery history, and reporting.
 
 ## 5. Non-Goals
@@ -69,7 +74,7 @@ Recommended dev/test dependencies:
 - No external database service for MVP.
 - No POS integration.
 - No payment processing.
-- No QR code or wallet integration.
+- No wallet integration.
 - No offline-first sync.
 - No multi-shop or multi-branch architecture.
 - No arbitrary package sizes.
@@ -179,21 +184,31 @@ All `/admin/*` routes require admin authentication middleware.
 - `GET /admin/customers/new` shows add customer form.
 - `POST /admin/customers` creates a customer account.
 - `GET /admin/customers/:customerId` shows customer detail.
+- `GET /admin/customers/:customerId/package-purchases` shows full package history.
+- `GET /admin/customers/:customerId/deliveries` shows full delivery history.
 - `POST /admin/customers/:customerId/package-purchases` records package purchase.
-- `POST /admin/customers/:customerId/deliveries` records one delivered cup.
-- `GET /admin/reports` shows reporting dashboard.
-
-Optional later route:
-
-- `POST /admin/customers/:customerId/delete` deletes a customer after confirmation, if deletion is implemented.
+- `POST /admin/customers/:customerId/deliveries` records delivered cup quantity.
+- `POST /admin/deliveries/:deliveryId/void` voids a mistaken delivery.
+- `GET /admin/deliveries` shows paginated delivery history, newest first.
+- `POST /admin/customers/:customerId/balance-link/regenerate` regenerates the shared balance token.
 
 ### Customer Routes
 
 All `/customer/*` routes require customer authentication middleware.
 
 - `GET /customer/balance` shows the authenticated customer's balance page.
+- `GET /customer/package-history` shows the authenticated customer's full package history.
+- `GET /customer/delivery-history` shows the authenticated customer's full delivery history.
 
 Customer routes must never accept a customer id from the browser to decide whose data to show. The customer id must come from the session.
+
+Shared balance access routes are read-only and do not require a customer session:
+
+- `GET /customer/access/:token` shows the linked customer's read-only balance page.
+- `GET /customer/access/:token/package-history` shows read-only full package history.
+- `GET /customer/access/:token/delivery-history` shows read-only full delivery history.
+
+Shared token routes must never expose payment amounts, admin navigation, or mutation actions.
 
 ## 9. API Design
 
@@ -233,12 +248,12 @@ Server behavior:
 Request fields:
 
 - `packageSize`: `10`, `20`, or `30`
-- `amountPaid` optional
 
 Server behavior:
 
 - Validate admin session.
 - Validate package size.
+- Calculate amount paid as `packageSize * 30.000 ₫`.
 - Calculate bonus cups and total cups added.
 - Insert package purchase.
 - Increase customer current balance.
@@ -248,6 +263,7 @@ Server behavior:
 
 Request fields:
 
+- `deliveredCups`: positive integer, defaults to `1`
 - `note` optional
 
 Server behavior:
@@ -255,9 +271,21 @@ Server behavior:
 - Validate admin session.
 - Re-read current balance inside a transaction.
 - Block if balance is `0`.
-- Decrease balance by `1`.
-- Insert delivery history row with `delivered_cups = 1` and `balance_after`.
+- Block if `deliveredCups > current_balance`.
+- Decrease balance by delivered cup quantity.
+- Insert delivery history row with `delivered_cups` and `balance_after`.
 - Commit both operations in one SQLite transaction.
+
+### POST `/admin/deliveries/:deliveryId/void`
+
+Server behavior:
+
+- Validate admin session.
+- Load the delivery.
+- Block if already voided.
+- Restore delivered cups to the customer balance.
+- Mark delivery with `voided_at` and `voided_by_admin_id`.
+- Commit balance restoration and delivery update in one SQLite transaction.
 
 ### GET `/customer/balance`
 
@@ -292,6 +320,7 @@ CREATE TABLE customer_accounts (
   email TEXT,
   login_identifier TEXT NOT NULL UNIQUE,
   password_hash TEXT NOT NULL,
+  balance_access_token TEXT NOT NULL UNIQUE,
   current_balance INTEGER NOT NULL DEFAULT 0,
   created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
   updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -323,9 +352,12 @@ CREATE TABLE delivery_history (
   note TEXT,
   created_by_admin_id INTEGER NOT NULL,
   delivery_date TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  voided_at TEXT,
+  voided_by_admin_id INTEGER,
   FOREIGN KEY (customer_id) REFERENCES customer_accounts(id),
   FOREIGN KEY (created_by_admin_id) REFERENCES admin_users(id),
-  CHECK (delivered_cups = 1),
+  FOREIGN KEY (voided_by_admin_id) REFERENCES admin_users(id),
+  CHECK (delivered_cups > 0),
   CHECK (balance_after >= 0)
 );
 
@@ -342,6 +374,7 @@ CREATE TABLE admin_action_logs (
 
 CREATE INDEX idx_customer_accounts_phone ON customer_accounts(phone);
 CREATE INDEX idx_customer_accounts_login_identifier ON customer_accounts(login_identifier);
+CREATE INDEX idx_customer_accounts_balance_access_token ON customer_accounts(balance_access_token);
 CREATE INDEX idx_package_purchases_customer_id ON package_purchases(customer_id);
 CREATE INDEX idx_package_purchases_created_at ON package_purchases(created_at);
 CREATE INDEX idx_package_purchases_package_size ON package_purchases(package_size);
@@ -350,7 +383,7 @@ CREATE INDEX idx_delivery_history_delivery_date ON delivery_history(delivery_dat
 CREATE INDEX idx_customer_accounts_current_balance ON customer_accounts(current_balance);
 ```
 
-Store money as integer cents to avoid floating-point rounding issues.
+Store money as integer cents to avoid floating-point rounding issues. The current package price is `30.000 ₫` per purchased cup, stored as cents in `amount_paid_cents`.
 
 ## 11. Business Logic Design
 
@@ -371,7 +404,7 @@ function calculatePackageCredits(packageSize) {
   }
 
   if (packageSize === 30) {
-    return { packageSize: 30, bonusCups: 0, totalCupsAdded: 30 };
+    return { packageSize: 30, bonusCups: 3, totalCupsAdded: 33 };
   }
 
   throw new Error('Invalid package size. Package size must be 10, 20, or 30.');
@@ -380,10 +413,11 @@ function calculatePackageCredits(packageSize) {
 
 ### Package Purchase Recording
 
-`recordPackagePurchase(customerId, packageSize, amountPaidCents, adminUserId)`:
+`recordPackagePurchase(customerId, packageSize, adminUserId)`:
 
 - Validate package size.
 - Calculate bonus cups and total cups.
+- Calculate `amount_paid_cents = packageSize * 30.000 ₫ * 100`.
 - Begin SQLite transaction.
 - Insert `package_purchases`.
 - Update `customer_accounts.current_balance = current_balance + total_cups_added`.
@@ -393,12 +427,14 @@ function calculatePackageCredits(packageSize) {
 
 ### Delivery Recording
 
-`recordDelivery(customerId, adminUserId, note)`:
+`recordDelivery(customerId, deliveredCups, adminUserId, note)`:
 
 - Begin SQLite transaction.
+- Validate delivered cup quantity is a positive integer.
 - Read customer balance inside transaction.
 - If balance is `0`, roll back and return business error.
-- Calculate `balanceAfter = currentBalance - 1`.
+- If delivered cup quantity is greater than current balance, roll back and return business error.
+- Calculate `balanceAfter = currentBalance - deliveredCups`.
 - Update customer current balance.
 - Insert `delivery_history`.
 - Insert admin action log.
@@ -406,6 +442,24 @@ function calculatePackageCredits(packageSize) {
 - Roll back on error.
 
 Delivery history must display reverse chronologically by `delivery_date DESC`.
+
+### Delivery Voiding
+
+`voidDelivery(deliveryId, adminUserId)`:
+
+- Begin SQLite transaction.
+- Load the delivery.
+- Block if the delivery does not exist.
+- Block if the delivery is already voided.
+- Restore `delivered_cups` to the customer's current balance.
+- Mark `voided_at` and `voided_by_admin_id`.
+- Insert admin action log.
+- Commit.
+- Roll back on error.
+
+### Shared Balance Token
+
+Customer accounts have one `balance_access_token`. Token access uses `/customer/access/:token` and related read-only history routes. Regenerating the token replaces the stored value and invalidates the old link.
 
 ## 12. Authentication Strategy
 
@@ -459,6 +513,7 @@ Rules:
 - Customers cannot pass arbitrary customer ids to view other accounts.
 - Admin functions are not rendered in customer views.
 - Admin-only route handlers must be protected even if links are hidden.
+- Shared token routes render read-only customer data only and must not expose payment amounts or admin actions.
 
 ## 14. Reporting Design
 
@@ -471,10 +526,11 @@ Required metrics:
 - Package purchases by package size: `GROUP BY package_size`.
 - Total bonus cups granted: `SUM(package_purchases.bonus_cups)`.
 - Total cups added: `SUM(package_purchases.total_cups_added)`.
-- Total cups delivered: `COUNT(delivery_history.id)`.
+- Total cups delivered: `SUM(delivery_history.delivered_cups)` where `voided_at IS NULL`.
 - Total outstanding cup balance: `SUM(customer_accounts.current_balance)`.
 - Low balance customers: `current_balance <= 5`.
-- Recent deliveries: `ORDER BY delivery_date DESC LIMIT 10`.
+- Dashboard recent deliveries: newest first, limited to 5 non-voided deliveries.
+- Admin delivery history: newest first, paginated.
 
 Revenue labels must say "Recorded package revenue" and must not imply accounting compliance.
 
@@ -592,7 +648,7 @@ Coverage:
 
 - `10` package credits `11` cups.
 - `20` package credits `22` cups.
-- `30` package credits `30` cups.
+- `30` package credits `33` cups.
 - Invalid package size is rejected.
 - Low balance threshold is `<= 5`.
 
@@ -655,7 +711,7 @@ Before deployment:
 - Admin creates customer.
 - Admin records 10-cup package and sees 11 credited cups.
 - Admin records 20-cup package and sees 22 credited cups.
-- Admin records 30-cup package and sees 30 credited cups.
+- Admin records 30-cup package and sees 33 credited cups.
 - Admin records delivery and balance decreases by 1.
 - Admin cannot record delivery at 0 balance.
 - Customer logs in and sees only own balance/history.
@@ -706,7 +762,7 @@ Consequences: Customer routes must never render admin navigation or accept arbit
 
 ### ADR-006: Package Sizes Are Fixed Business Rules
 
-Decision: Only support package sizes `10`, `20`, and `30` with credits `11`, `22`, and `30`.
+Decision: Only support package sizes `10`, `20`, and `30` with credits `11`, `22`, and `33`.
 
 Reason: Package credits are core business rules and must be consistent everywhere.
 

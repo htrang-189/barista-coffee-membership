@@ -2,11 +2,11 @@
 
 Date: 2026-06-01
 Project: barista-coffee-membership
-Status: Draft - Reconciled with Project Context
+Status: Draft - Reconciled with Current Implementation And QA Gate
 
 ## 1. UX Goal
 
-Design a small authenticated web app for coffee membership management. The interface should help admins create customer accounts, record package purchases, show bonus cup calculations, record deliveries, and monitor balances. Customers should be able to log in and clearly understand their current balance, package history, and delivery history.
+Design a small authenticated web app for coffee membership management. The interface should help admins create customer accounts, record package purchases with calculated VND pricing, show bonus cup calculations, record multi-cup deliveries, void mistaken deliveries, share read-only balance links/QR codes, and monitor balances. Customers should be able to log in or use a shared read-only balance link to understand their current balance, package history, and delivery history.
 
 The UX specification follows Project Context and the updated PRD as the source of truth. Screens and flows should assume a vanilla HTML/CSS/JavaScript frontend served by a Node.js/Express application with SQLite-backed data.
 
@@ -14,7 +14,9 @@ The UX specification follows Project Context and the updated PRD as the source o
 
 - Make current cup balance prominent on every balance-related screen.
 - Show bonus cup calculation clearly before saving package purchases.
+- Show fixed price calculation clearly: `30.000 ₫` per purchased cup.
 - Keep delivery recording fast for counter service.
+- Keep delivery correction safe by marking mistaken deliveries voided instead of deleting records.
 - Separate admin and customer interfaces completely.
 - Use Project Context terminology: package purchase, bonus cups, delivery, delivery history, current balance.
 - Make validation errors clear and close to the action.
@@ -31,6 +33,8 @@ The UX specification follows Project Context and the updated PRD as the source o
 - Customer detail
 - Record package purchase
 - Record delivery
+- Void delivery
+- Share balance link / QR code
 - Reports
 - Logout
 
@@ -40,6 +44,7 @@ The UX specification follows Project Context and the updated PRD as the source o
 - Customer balance page
 - Package history
 - Delivery history
+- Shared read-only balance link pages
 - Logout
 
 ## 4. Navigation Model
@@ -133,18 +138,18 @@ Required content:
 - Bonus cups granted.
 - Total cups delivered.
 - Low balance customers.
-- Recent deliveries.
+- Recent deliveries, limited to the 5 newest records with a `View all deliveries` link.
 
 Primary actions:
 
 - Add customer.
 - Open customer detail.
-- Open reports.
+- Open full delivery history.
 
 UX notes:
 
 - Current balance and low balance indicators should be scannable.
-- Recent deliveries should show newest first.
+- Recent deliveries should show newest first and stay compact.
 - Dashboard metrics should use concise labels.
 - Show loading states while metrics and recent deliveries load.
 - Display user-friendly error states if dashboard data cannot load.
@@ -225,11 +230,15 @@ Required content:
 - Low balance warning when balance <= 5.
 - Package purchase history.
 - Delivery history in reverse chronological order.
+- Shareable balance link and QR code controls.
 
 Primary actions:
 
 - Record delivery.
 - Record package purchase.
+- Copy balance link.
+- Show QR code.
+- Regenerate balance link.
 - Edit customer details.
 
 Conditional destructive action:
@@ -241,6 +250,9 @@ UX notes:
 - `Record delivery` should be prominent when balance is above 0.
 - If balance is 0, disable delivery recording and show a clear warning.
 - Current balance should update immediately after package purchase or delivery.
+- Package purchase and delivery history previews should show only the 5 newest records with `View All` links.
+- Full history pages should show complete history newest first.
+- Regenerating a balance link should invalidate the old link.
 - If delete customer is implemented, require a confirmation dialog before completion.
 - Show loading feedback while package and delivery history load.
 
@@ -251,13 +263,14 @@ Purpose: record a package and add the correct number of cups.
 Fields:
 
 - Package size, required: 10, 20, or 30.
-- Amount paid, optional or required depending on implementation settings.
 
 System behavior:
 
 - Validates package size.
+- Calculates amount paid automatically at `30.000 ₫` per purchased cup.
 - Shows bonus cups.
 - Shows total cups added.
+- Shows calculated amount paid using VND formatting.
 - Creates package purchase record.
 - Adds total cups to current balance.
 
@@ -265,31 +278,33 @@ Package display rules:
 
 - `10 -> 11`: 10 package cups + 1 bonus cup = 11 total cups.
 - `20 -> 22`: 20 package cups + 2 bonus cups = 22 total cups.
-- `30 -> 30`: 30 package cups + 0 bonus cups = 30 total cups.
+- `30 -> 33`: 30 package cups + 3 bonus cups = 33 total cups.
 
 UX notes:
 
 - Use a segmented control or select with only valid package sizes.
-- The bonus calculation should be visible before save.
+- The purchased cups, calculated amount, bonus note, and total credited cups should be visible before save.
 - Invalid package sizes should not be user-selectable.
 - Show current balance before save and projected balance after save.
 - Show loading feedback while saving the package purchase.
-- If save fails, keep the selected package and entered amount visible so the admin can retry.
+- If save fails, keep the selected package visible so the admin can retry.
 
 ### 5.8 Record Delivery
 
-Purpose: subtract 1 cup quickly during counter service.
+Purpose: subtract one or more delivered cups quickly during counter service.
 
 Fields:
 
+- Delivered cups, required, positive integer, default `1`.
 - Optional note.
 
 System behavior:
 
 - Creates delivery history record.
-- Subtracts 1 cup from current balance.
+- Subtracts delivered cup quantity from current balance.
 - Stores balance after delivery.
 - Blocks delivery if current balance is 0.
+- Blocks delivery quantity greater than current balance.
 
 UX notes:
 
@@ -297,8 +312,30 @@ UX notes:
 - Use a fast confirmation-light interaction.
 - Show immediate success state with updated balance.
 - At 0 balance, explain that delivery cannot be recorded until a package is purchased.
+- If quantity exceeds balance, explain that the delivery quantity is greater than current balance.
 - Show loading feedback while recording delivery.
 - If another delivery changes the balance concurrently, show the latest balance and a clear retry message.
+
+### 5.8A Void Delivery
+
+Purpose: correct mistaken delivery recording without deleting history.
+
+Actions:
+
+- Void delivery, available to admins only on non-voided delivery records.
+
+System behavior:
+
+- Restores the delivered cup quantity to current balance.
+- Marks the delivery as voided/cancelled.
+- Prevents voiding the same delivery twice.
+- Excludes voided deliveries from dashboard delivered-cup totals.
+
+UX notes:
+
+- Show voided deliveries with a clear `Voided` label.
+- Do not delete voided rows from history.
+- Show a confirmation or clear feedback after voiding.
 
 ### 5.9 Reports
 
@@ -314,7 +351,7 @@ Required content:
 - Total cups delivered.
 - Total outstanding cups.
 - Low balance customers.
-- Recent deliveries.
+- Recent deliveries, limited to 5 on the dashboard with a `View all deliveries` link.
 - Per-customer current balance.
 - Per-customer delivery history access.
 
@@ -332,20 +369,61 @@ Purpose: let the customer verify their membership balance and activity.
 Required content:
 
 - Customer display name.
-- Current cup balance.
+- Time-of-day greeting: morning, afternoon, or evening.
+- Member-since message.
+- Current cup balance in the right-side balance card.
+- Used cups.
+- Cup consumption progress bar based on used cups and remaining cups.
 - Low balance warning when balance <= 5.
+- Notification bell in the header with badge, periodic shake, and popover for low or exhausted balance.
 - Package purchase history.
 - Delivery history in reverse chronological order.
+- Recent package and delivery history previews limited to 3-5 records each.
+- `View All` links for complete package and delivery history.
+
+Visual direction:
+
+- Warm cream page background.
+- Dark green hero membership card.
+- Dynamic greeting and friendly membership copy in the hero.
+- Subtle low-opacity coffee-themed decoration in the hero card.
+- Current balance remains outside the hero card in the right-side balance panel.
+- Package history and cup history appear as compact side-by-side cards on desktop and stacked cards on smaller screens.
 
 Forbidden content:
 
 - Admin actions.
 - Other customer data.
 - Admin-only reports.
+- Payment amounts.
+
+### 5.11 Shared Balance Link Page
+
+Purpose: let customers view read-only balance information from an owner-generated link or QR code.
+
+Required content:
+
+- Customer display name.
+- Time-of-day greeting and member-since message.
+- Current cup balance in the right-side balance card.
+- Used cups.
+- Cup consumption progress bar.
+- Low balance warning when balance <= 5.
+- Notification bell with low-balance popover.
+- Package history preview limited to 3-5 records.
+- Delivery history preview limited to 3-5 records.
+- `View All` links to read-only full-history pages.
+
+Forbidden content:
+
+- Admin actions.
+- Payment amounts.
+- Login identifier.
+- Other customer data.
 
 UX notes:
 
-- Mobile-first layout.
+- Responsive desktop web layout, centered around 1100-1200px max width, stacking cards on smaller screens.
 - Current balance should appear near the top without scrolling.
 - Delivery entries should be plain and readable.
 - Show loading feedback while account data loads.
@@ -360,7 +438,8 @@ Admin view:
 - Show package size.
 - Show bonus cups.
 - Show total cups added.
-- Show amount paid when recorded.
+- Show calculated amount paid using VND formatting.
+- Use VND formatting such as `300.000 ₫`.
 - Show date/time.
 
 Customer view:
@@ -370,6 +449,7 @@ Customer view:
 - Show total cups added.
 - Show date/time.
 - Hide admin-only metadata.
+- Hide payment amounts.
 
 ### Delivery History Display
 
@@ -385,9 +465,16 @@ Admin view:
 Customer view:
 
 - Show delivery date/time.
-- Show delivered cup.
+- Show delivered cups.
 - Show balance after delivery.
 - Show note when appropriate.
+- Show voided/cancelled label when applicable.
+
+### History Preview Display
+
+- Customer detail, customer balance, and shared balance pages show recent package records and recent delivery records, currently 3-5 records depending on the section.
+- `View All` opens a dedicated full-history page.
+- Admin deliveries page is paginated newest first.
 
 ### Balance Display
 
@@ -424,6 +511,14 @@ Block submission and explain that only 10, 20, and 30 cup packages are supported
 ### Low Balance
 
 Show a warning when current balance is 5 cups or fewer.
+
+### Delivery Quantity Exceeds Balance
+
+Block submission and explain that the delivery quantity is greater than current balance.
+
+### Voided Delivery
+
+Keep the delivery visible with a clear voided label and restored balance reflected in current balance.
 
 ### Invalid Login
 
@@ -463,6 +558,7 @@ Customer views:
 - Mobile-first.
 - Current balance should be visible near the top.
 - Delivery history should be readable as a vertical list.
+- History preview lists should remain compact, with full history available through `View All`.
 
 ## 9. Content Guidelines
 
@@ -476,6 +572,12 @@ Use concise operational labels:
 - `Total cups added`
 - `Record delivery`
 - `Delivery history`
+- `View All`
+- `View all deliveries`
+- `Copy link`
+- `Show QR code`
+- `Regenerate link`
+- `Voided`
 - `Recorded package revenue`
 - `Outstanding cups`
 - `Customer login`
@@ -489,6 +591,7 @@ Avoid:
 - `Redeem`
 - `Redemption`
 - `Private link`
+- Payment amount on customer-facing pages.
 - Loyalty campaign language.
 - Accounting-grade claims.
 - Payment-processing language.
@@ -574,9 +677,11 @@ Breakdowns
 ### Customer Balance Layout
 
 ```text
-Customer name
-Current balance
+Header with Barista Membership and notification bell
+Hero membership card with time-of-day greeting and member-since message
+Right-side balance card with current balance
 Low balance warning if needed
+Cup consumption progress bar
 
 Package history
 Delivery history
@@ -601,11 +706,13 @@ Logout
 - Admin can add a customer account with required login information.
 - Duplicate customer creation is prevented or clearly warned.
 - Admin can record package purchases for 10, 20, and 30 cup packages only.
-- Bonus cup calculation is visible and correct for 10->11, 20->22, and 30->30.
-- Admin can record one-cup delivery quickly.
+- Bonus cup calculation is visible and correct for 10->11, 20->22, and 30->33.
+- Admin can record delivered-cup quantity quickly.
 - Delivery is blocked when balance is 0.
 - Current balance is prominent in admin and customer views.
 - Low balance warning appears at balance <= 5.
+- Customer portal and shared balance link use the premium coffee membership visual style.
+- Customer portal and shared balance link include notification bell and cup progress bar.
 - Delivery history appears in reverse chronological order.
 - Reports include customer count, recorded package revenue, package-size breakdown, bonus cups, cups added, cups delivered, outstanding cups, low balance customers, and recent deliveries.
 - Database-backed actions show loading feedback and user-friendly errors.

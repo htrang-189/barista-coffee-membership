@@ -7,11 +7,11 @@ Project: barista-coffee-membership
 
 ### Barista Coffee Membership Helps Small Coffee Shops Track Prepaid Cups Without Spreadsheets Or Paper Cards
 
-Independent coffee shops that sell prepaid drink packages now have a simpler way to track customer balances. Barista Coffee Membership is a lightweight prepaid cup ledger for shops that sell memberships and need clear records of purchases, redemptions, remaining cups, and customer usage history.
+Independent coffee shops that sell prepaid drink packages now have a simpler way to track customer balances. Barista Coffee Membership is a lightweight prepaid cup ledger for shops that sell memberships and need clear records of purchases, cup deliveries, remaining cups, and customer usage history.
 
 The product is designed for very small membership programs, especially shops with only a handful of prepaid customers. Instead of forcing the shop into a full POS, loyalty, or rewards platform, Barista Coffee Membership focuses on one job: keeping an accurate ledger of prepaid cups.
 
-Shop owners can create customers, record purchases, redeem one cup at a time, and make transparent balance adjustments when mistakes happen. Customers receive a private read-only link where they can check their remaining cups, used cups, and usage history without creating an account.
+Shop owners can create customers, record purchases with automatic VND pricing, record one or more delivered cups, void mistaken deliveries, and share a read-only QR or balance link. Customers can log in or use the shared link to check remaining cups, used cups, package history, and delivery history without seeing payment amounts or owner actions.
 
 For shops currently relying on paper punch cards, notebooks, or spreadsheets, Barista Coffee Membership provides a clearer and more trustworthy way to manage prepaid coffee memberships while staying intentionally lean.
 
@@ -19,11 +19,11 @@ For shops currently relying on paper punch cards, notebooks, or spreadsheets, Ba
 
 ### 1. What problem does this solve?
 
-Small coffee shops may sell prepaid memberships but track them manually with paper cards, spreadsheets, or memory. That creates risk of lost cards, unclear balances, accidental over-redemption, and customer uncertainty. This product gives the owner and customer a shared, simple source of truth.
+Small coffee shops may sell prepaid memberships but track them manually with paper cards, spreadsheets, or memory. That creates risk of lost cards, unclear balances, accidental overuse, and customer uncertainty. This product gives the owner and customer a shared, simple source of truth.
 
 ### 2. Why would a shop use this instead of a spreadsheet?
 
-A spreadsheet can track balances, but it is awkward during counter service and easy to edit incorrectly. This product gives the owner purpose-built actions: record purchase, redeem cup, and adjust balance. It also gives customers a read-only view, which spreadsheets do not handle cleanly without exposing too much information.
+A spreadsheet can track balances, but it is awkward during counter service and easy to edit incorrectly. This product gives the owner purpose-built actions: record purchase, record delivery quantity, and void a mistaken delivery. It also gives customers a read-only view, which spreadsheets do not handle cleanly without exposing too much information.
 
 ### 3. Why would a shop use this instead of paper punch cards?
 
@@ -35,27 +35,27 @@ The customer has already paid for future drinks. The main need is not promotion,
 
 ### 5. Does the MVP include loyalty rewards?
 
-No. Loyalty rewards, stamps, discounts, campaigns, referrals, and marketing automation are out of scope. The MVP only tracks prepaid cup purchases, redemptions, adjustments, balances, and usage history.
+No. Loyalty rewards, stamps, discounts, campaigns, referrals, and marketing automation are out of scope. The MVP tracks prepaid cup purchases, automatically calculated VND package totals, cup deliveries, voided delivery corrections, balances, and usage history.
 
 ### 6. How does the product help shop owners?
 
-It helps owners see each customer's remaining cups, record package revenue, track outstanding cups, and correct mistakes with notes. It reduces reliance on paper cards or informal records while staying simple enough for a very small shop.
+It helps owners see each customer's remaining cups, record package purchases and operational revenue, track outstanding cups, and void mistaken deliveries while preserving history. It reduces reliance on paper cards or informal records while staying simple enough for a very small shop.
 
 ### 7. How does the product help customers?
 
-Customers can independently check how many cups they have remaining, how many they have used, and when redemptions happened. This improves transparency and reduces the need to ask the shop owner for balance updates.
+Customers can independently check how many cups they have remaining, how many they have used, and when deliveries happened through the customer portal or a shared read-only balance link. This improves transparency and reduces the need to ask the shop owner for balance updates.
 
-### 8. Why does the MVP use private customer links instead of customer accounts?
+### 8. Why does the MVP support both customer login and shared balance links?
 
-Customer accounts add signup, passwords, login support, and account recovery. For a shop with around 2-10 members, that is unnecessary complexity. A private read-only link gives customers the value they need with much less friction.
+Customer login gives each member a clear read-only account view. Shared balance links and QR codes give the owner an easy way to send the same read-only balance page without adding payment, ordering, or a separate app.
 
-### 9. Are private customer links secure?
+### 9. Are shared customer links secure?
 
-They are simpler than full accounts, but not as secure. Anyone with the link can view that customer's balance page. The MVP mitigates this by making the page read-only, hiding sensitive payment details, and allowing the owner to regenerate the link if needed.
+They are bearer links, so anyone with the link can view that customer's read-only balance page. The MVP mitigates this by hiding payment amounts and admin actions, preventing mutations, and allowing the owner to regenerate the access token, which invalidates the old link.
 
 ### 10. Does the app process payments?
 
-No. Payments happen outside the app. The owner records that a purchase occurred and enters the amount collected for simple revenue visibility.
+No. Payments happen outside the app. The owner records that a package purchase occurred; the app calculates the recorded VND amount automatically at `30.000 ₫` per purchased cup for simple revenue visibility.
 
 ### 11. Is recorded revenue the same as accounting revenue?
 
@@ -63,15 +63,15 @@ No. The MVP shows recorded package revenue from purchases entered into the app. 
 
 ### 12. What happens when a mistake is made?
 
-The owner creates an adjustment transaction with a required note. This is better than silently editing balances because the correction remains visible in the customer's history.
+The owner can void/cancel a mistaken delivery. The delivered cups are restored to the customer's balance, and the delivery record remains visible as voided/cancelled instead of being deleted.
 
 ### 13. Why use transactions instead of storing only a customer balance?
 
-A transaction history explains how the balance was reached. It supports customer trust, correction history, usage history, and revenue reporting. A single hidden balance is simpler at first but harder to verify later.
+Package purchase and delivery history explains how the balance was reached. It supports customer trust, correction history, usage history, and revenue reporting. A single hidden balance is simpler at first but harder to verify later.
 
 ### 14. What are the biggest MVP limitations?
 
-The MVP has no staff accounts, no QR codes, no POS integration, no offline mode, no payment processing, no loyalty features, no multi-shop support, and no customer login system. These limitations are intentional to keep the first version focused.
+The MVP has no staff accounts, no POS integration, no offline mode, no payment processing, no loyalty features, no wallet pass, and no multi-shop support. These limitations are intentional to keep the first version focused.
 
 ### 15. Who is this not for?
 
@@ -79,7 +79,7 @@ It is not for chains, shops needing integrated POS gift cards, businesses with c
 
 ### 16. What would make the MVP successful?
 
-The MVP is successful if the owner can stop using paper or spreadsheets for prepaid cup tracking, customers can verify their balances independently, and purchase/redemption history is clear enough to resolve mistakes or disputes.
+The MVP is successful if the owner can stop using paper or spreadsheets for prepaid cup tracking, customers can verify their balances independently, and package/delivery history is clear enough to resolve mistakes or disputes.
 
 ## Product Principles
 
@@ -87,7 +87,7 @@ The MVP is successful if the owner can stop using paper or spreadsheets for prep
 - Optimize for speed at the counter.
 - Make customer balances transparent.
 - Prefer clear history over hidden mutable balances.
-- Avoid loyalty, POS, payment, and account complexity in MVP.
+- Avoid loyalty, POS, payment, ordering, and multi-shop complexity in MVP.
 
 ## Recommended Next Step
 

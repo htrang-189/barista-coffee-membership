@@ -40,7 +40,9 @@ async function getDashboardMetrics(database) {
   );
   const deliveryTotals = await get(
     database,
-    'SELECT COUNT(*) AS total_cups_delivered FROM delivery_history'
+    `SELECT COALESCE(SUM(delivered_cups), 0) AS total_cups_delivered
+     FROM delivery_history
+     WHERE voided_at IS NULL`
   );
   const bonusTotals = await get(
     database,
@@ -61,8 +63,9 @@ async function getDashboardMetrics(database) {
      FROM delivery_history d
      JOIN customer_accounts c ON c.id = d.customer_id
      JOIN admin_users a ON a.id = d.created_by_admin_id
+     WHERE d.voided_at IS NULL
      ORDER BY d.delivery_date DESC, d.id DESC
-     LIMIT 10`
+     LIMIT 5`
   );
 
   return {

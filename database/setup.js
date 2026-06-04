@@ -3,6 +3,7 @@ const path = require('path');
 
 const config = require('../config');
 const { openDatabase } = require('./database');
+const { runMigrations } = require('./migrations');
 const { createAdminUser } = require('../models/admin-user');
 
 async function seedInitialAdmin(database) {
@@ -40,6 +41,7 @@ function setupDatabase() {
     }
 
     try {
+      await runMigrations(database);
       await seedInitialAdmin(database);
       console.log(`Database initialized at ${config.databasePath}`);
     } catch (adminError) {

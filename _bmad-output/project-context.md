@@ -93,12 +93,17 @@ _This file contains critical rules and patterns that AI agents must follow when 
 
 **Coffee Business Logic:**
 - Always display current cup balance prominently
-- Show bonus cups calculation clearly (10→11, 20→22)
+- Show bonus cups calculation clearly (10→11, 20→22, 30→33)
+- Calculate package price automatically at `30.000 ₫` per purchased cup
 - Prevent negative balances with clear warnings
+- Support positive integer multi-cup delivery quantities
+- Support voiding mistaken deliveries with balance restoration and retained history records
 - Display delivery history in reverse chronological order
+- Show compact history previews with 5 recent records and `View All` full-history pages
 
 **Security Rules:**
 - Never expose admin functions to customer interface
+- Shared balance links are bearer-token read-only views; never expose payment amounts or admin actions on them
 - Always validate user permissions server-side
 - Use HTTPS for all authentication pages
 - Implement CSRF protection for forms
@@ -106,7 +111,7 @@ _This file contains critical rules and patterns that AI agents must follow when 
 ### Testing Rules
 
 **Testing Strategy for User-Managed Projects:**
-- Test all coffee business logic scenarios (10→11, 20→22, 30→30 bonus cups)
+- Test all coffee business logic scenarios (10→11, 20→22, 30→33 bonus cups)
 - Verify balance calculations after each delivery recording
 - Test both admin and customer login flows
 - Ensure customers cannot access admin functions
@@ -119,12 +124,15 @@ _This file contains critical rules and patterns that AI agents must follow when 
 
 **Business Logic Testing:**
 - Test bonus cup calculations: `if (packageSize === 10) totalCups = 11`
-- Test delivery recording: balance decreases by 1, delivery record created
+- Test fixed VND pricing: amount paid is calculated as purchased cups × `30.000 ₫`
+- Test delivery recording: balance decreases by delivered cup quantity, delivery record created
+- Test delivery voiding: cups are restored, record is marked voided, and double-void is blocked
 - Test low balance warnings: show warning when balance ≤ 5
 - Test duplicate customer prevention
 
 **Error Scenario Testing:**
 - Test delivery recording when balance is 0 (should prevent and show warning)
+- Test delivery quantity greater than balance (should prevent and show warning)
 - Test invalid login attempts (should show error message)
 - Test database connection failures (should show user-friendly error)
 - Test form validation (empty fields, invalid data)
@@ -206,6 +214,8 @@ _This file contains critical rules and patterns that AI agents must follow when 
 
 **Coffee Business Logic Edge Cases:**
 - Prevent delivery recording when customer balance is 0
+- Prevent delivery quantity greater than current balance
+- Prevent voiding the same delivery twice
 - Handle concurrent delivery recordings (use database transactions)
 - Validate coffee package sizes (only allow 10, 20, 30)
 - Ensure bonus cup calculations are always correct

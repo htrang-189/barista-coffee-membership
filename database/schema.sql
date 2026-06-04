@@ -16,6 +16,7 @@ CREATE TABLE IF NOT EXISTS customer_accounts (
   email TEXT,
   login_identifier TEXT NOT NULL UNIQUE,
   password_hash TEXT NOT NULL,
+  balance_access_token TEXT NOT NULL UNIQUE,
   current_balance INTEGER NOT NULL DEFAULT 0,
   created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
   updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -47,9 +48,12 @@ CREATE TABLE IF NOT EXISTS delivery_history (
   note TEXT,
   created_by_admin_id INTEGER NOT NULL,
   delivery_date TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  voided_at TEXT,
+  voided_by_admin_id INTEGER,
   FOREIGN KEY (customer_id) REFERENCES customer_accounts(id),
   FOREIGN KEY (created_by_admin_id) REFERENCES admin_users(id),
-  CHECK (delivered_cups = 1),
+  FOREIGN KEY (voided_by_admin_id) REFERENCES admin_users(id),
+  CHECK (delivered_cups > 0),
   CHECK (balance_after >= 0)
 );
 

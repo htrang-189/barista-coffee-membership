@@ -20,8 +20,8 @@ function calculatePackageCredits(packageSize) {
   if (normalizedPackageSize === 30) {
     return {
       packageSize: 30,
-      bonusCups: 0,
-      totalCupsAdded: 30
+      bonusCups: 3,
+      totalCupsAdded: 33
     };
   }
 

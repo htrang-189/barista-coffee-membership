@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Customer Login | Barista Coffee Membership</title>
+    <link rel="stylesheet" href="/css/styles.css">
+  </head>
+  <body class="auth-page">
+    <main class="login-layout">
+      <section class="login-visual" aria-label="Barista Coffee Membership">
+        <div class="brand">
+          <span class="brand-mark">B</span>
+          <span>Barista Membership</span>
+        </div>
+        <div>
+          <p class="eyebrow light">Member Access</p>
+          <h1>Your prepaid coffee balance and visit history.</h1>
+          <p class="login-copy">Check remaining cups, used cups, package credits, and delivery history from one private view.</p>
+        </div>
+        <p class="login-footnote">Read-only customer area</p>
+      </section>
+
+      <section class="login-panel">
+        <p class="eyebrow">Member Access</p>
+        <h2>Customer login</h2>
+        {{MESSAGE}}
+        <form class="form" method="post" action="/customer/login" data-loading-form>
+          <input type="hidden" name="csrfToken" value="{{CSRF_TOKEN}}">
+          <label for="loginIdentifier">Login identifier
+            <input id="loginIdentifier" name="loginIdentifier" autocomplete="username" required value="{{LOGIN_IDENTIFIER}}">
+          </label>
+          <label for="password">Password
+            <input id="password" name="password" type="password" autocomplete="current-password" required>
+          </label>
+          <button class="button" type="submit">Log in</button>
+        </form>
+      </section>
+    </main>
+    <script src="/js/admin.js"></script>
+  </body>
+</html>

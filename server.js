@@ -4,8 +4,10 @@ const path = require('path');
 const session = require('express-session');
 
 const { openDatabase } = require('./database/database');
+const { runMigrations } = require('./database/migrations');
 const { ensureCsrfToken } = require('./middleware/csrf');
 const adminRoutes = require('./routes/admin');
+const customerRoutes = require('./routes/customer');
 
 function createApp(options) {
   const appOptions = options || {};
@@ -14,6 +16,7 @@ function createApp(options) {
   const isProduction = config.nodeEnv === 'production';
 
   app.locals.database = database;
+  app.locals.migrationsReady = null;
 
   app.use(express.urlencoded({ extended: false }));
   app.use(express.json());
@@ -33,11 +36,25 @@ function createApp(options) {
   app.use(ensureCsrfToken);
   app.use(express.static(path.join(__dirname, 'public')));
 
+  app.use(async function waitForMigrations(request, response, next) {
+    try {
+      if (!app.locals.migrationsReady) {
+        app.locals.migrationsReady = runMigrations(database);
+      }
+
+      await app.locals.migrationsReady;
+      next();
+    } catch (error) {
+      next(error);
+    }
+  });
+
   app.get('/', function handleRootRequest(request, response) {
     response.redirect('/admin/dashboard');
   });
 
   app.use('/admin', adminRoutes);
+  app.use('/customer', customerRoutes);
 
   app.use(function handleNotFound(request, response) {
     response.status(404).sendFile(path.join(__dirname, 'views', 'shared', '404.html'));

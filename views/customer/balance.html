@@ -1,0 +1,71 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>My Balance | Barista Coffee Membership</title>
+    <link rel="stylesheet" href="/css/styles.css">
+    <script src="/js/admin.js" defer></script>
+  </head>
+  <body class="customer-page">
+    <main class="customer-shell">
+      <header class="customer-header">
+        <div class="brand">
+          <span class="brand-mark">B</span>
+          <span>Barista Membership</span>
+        </div>
+        <div class="customer-header-actions">
+          {{NOTIFICATION_BELL}}
+          {{AUTH_ACTION}}
+        </div>
+      </header>
+
+      <section class="member-hero">
+        <div class="membership-card">
+          <div class="membership-card-content">
+            <p class="eyebrow light">Barista membership</p>
+            <h1><span data-dynamic-greeting>Good morning ☀️</span>, {{CUSTOMER_NAME}} 👋</h1>
+            <p data-dynamic-message>Ready for your coffee today?</p>
+            <p class="member-since">⭐ Member since Jun 2025</p>
+          </div>
+        </div>
+        <aside class="member-status-panel">
+          <p class="member-balance-label">Remaining cups</p>
+          <p class="member-balance-number">{{CURRENT_BALANCE}}</p>
+          <p class="member-balance-copy">cups ready for your next visit</p>
+          <div class="member-status-meta">
+            <div>
+              <p class="metric-label">Used cups</p>
+              <p class="metric-value">{{USED_CUPS}}</p>
+            </div>
+            <div>
+              <p class="metric-label">Status</p>
+              <p><span class="{{BALANCE_CLASS}}">{{CURRENT_BALANCE}} cups</span></p>
+            </div>
+          </div>
+        </aside>
+      </section>
+
+      {{BALANCE_NOTIFICATION}}
+      {{CUP_PROGRESS}}
+
+      <div class="member-history-grid">
+        <section class="member-history-section">
+          <div class="section-heading">
+            <p class="eyebrow">Top ups</p>
+            <h2>Package history</h2>
+          </div>
+          {{PACKAGE_HISTORY}}
+        </section>
+        <section class="member-history-section">
+          <div class="section-heading">
+            <p class="eyebrow">Visits</p>
+            <h2>Cup history</h2>
+          </div>
+          {{DELIVERY_HISTORY}}
+        </section>
+      </div>
+    </main>
+    {{NOTIFICATION_FALLBACK_SCRIPT}}
+  </body>
+</html>

@@ -30,7 +30,7 @@ Allow the coffee shop owner to operate the membership program end-to-end without
 - Log in as admin.
 - Create and find customers.
 - Record package purchases.
-- Apply bonus cup rules: `10 -> 11`, `20 -> 22`, `30 -> 30`.
+- Apply bonus cup rules: `10 -> 11`, `20 -> 22`, `30 -> 33`.
 - Track balances.
 - Record deliveries.
 - View delivery history.

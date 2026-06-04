@@ -19,11 +19,11 @@ test('20 cup package credits 22 total cups', function testTwentyCupPackage() {
   });
 });
 
-test('30 cup package credits 30 total cups', function testThirtyCupPackage() {
+test('30 cup package credits 33 total cups', function testThirtyCupPackage() {
   assert.deepEqual(calculatePackageCredits(30), {
     packageSize: 30,
-    bonusCups: 0,
-    totalCupsAdded: 30
+    bonusCups: 3,
+    totalCupsAdded: 33
   });
 });
 

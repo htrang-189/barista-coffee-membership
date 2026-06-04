@@ -1,6 +1,8 @@
 const { getAllRows, runStatement } = require('../database/database');
 const { calculatePackageCredits } = require('./cup-balance');
 
+const CUP_PRICE_CENTS = 30000 * 100;
+
 function run(database, sql, params) {
   return new Promise(function runPromise(resolve, reject) {
     runStatement(database, sql, params, function handleRun(error, result) {
@@ -27,24 +29,15 @@ function all(database, sql, params) {
   });
 }
 
-function parseAmountPaidCents(amountPaid) {
-  const normalizedAmount = String(amountPaid || '').replace(/[$,\s]/g, '');
+function calculatePackageAmountPaidCents(packageSize) {
+  const packageCredits = calculatePackageCredits(Number(packageSize));
 
-  if (!normalizedAmount) {
-    return 0;
-  }
-
-  const amount = Number(normalizedAmount);
-  if (!Number.isFinite(amount) || amount < 0) {
-    throw new Error('Amount paid must be a valid non-negative number.');
-  }
-
-  return Math.round(amount * 100);
+  return packageCredits.packageSize * CUP_PRICE_CENTS;
 }
 
-async function recordPackagePurchase(database, customerId, packageSize, amountPaid, adminUserId) {
+async function recordPackagePurchase(database, customerId, packageSize, adminUserId) {
   const packageCredits = calculatePackageCredits(Number(packageSize));
-  const amountPaidCents = parseAmountPaidCents(amountPaid);
+  const amountPaidCents = calculatePackageAmountPaidCents(packageCredits.packageSize);
 
   await run(database, 'BEGIN TRANSACTION', []);
 
@@ -111,7 +104,8 @@ async function listPackagePurchasesForCustomer(database, customerId) {
 }
 
 module.exports = {
+  calculatePackageAmountPaidCents,
+  CUP_PRICE_CENTS,
   listPackagePurchasesForCustomer,
-  parseAmountPaidCents,
   recordPackagePurchase
 };

@@ -104,7 +104,7 @@ npm test
 
 Latest QA evidence:
 
-- `28` tests passing.
+- `30` tests passing.
 - `0` failing.
 - QA artifact: `_bmad-output/implementation-artifacts/qa-summary-current-feature-set.md`.
 - Phase 2 review artifact: `_bmad-output/implementation-artifacts/stories/phase-2-customer-portal/phase-2-customer-portal-review.md`.
@@ -133,6 +133,7 @@ Phase 2 coverage includes:
 - Low-balance notification content renders when balance is `<= 5`.
 - Exhausted-package notification content renders when balance is `0`.
 - No raw template placeholders appear in rendered customer pages.
+- Owner-managed customer password reset regression tests pass while keeping customer reset out of Phase 2 self-service scope.
 
 ## 6. Remaining Phase 2 Backlog
 

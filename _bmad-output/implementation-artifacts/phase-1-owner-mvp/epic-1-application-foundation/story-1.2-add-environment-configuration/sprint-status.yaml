@@ -1,0 +1,170 @@
+phase: "Phase 1: Owner MVP"
+epic: "Epic 1: Application Foundation"
+story:
+  id: "1.2"
+  title: "Add Environment Configuration"
+output_type: "sprint-status.yaml"
+workflow_step: "Amelia: sprint-planning"
+status_snapshot: "Planned before development"
+final_delivery_status: "Implemented / Delivered"
+
+sprint_goal: >
+  Establish centralized environment configuration for the Express and SQLite
+  application so the Owner MVP can run locally, use the correct database path,
+  configure sessions safely, and support future authentication and testing
+  workflows without hardcoded runtime settings.
+
+story_scope:
+  in_scope:
+    - "Create a centralized configuration module."
+    - "Load environment variables through dotenv."
+    - "Provide local development defaults."
+    - "Configure runtime environment."
+    - "Configure server host and port."
+    - "Configure SQLite database path."
+    - "Configure session secret."
+    - "Configure bcrypt hashing rounds."
+    - "Wire configuration into server startup."
+    - "Wire configuration into database setup."
+    - "Wire configuration into database connection helper."
+  out_of_scope:
+    - "Admin login and logout implementation."
+    - "Customer login implementation."
+    - "Password hashing utility implementation beyond exposing bcrypt round configuration."
+    - "Package purchase logic."
+    - "Delivery recording logic."
+    - "Dashboard metrics."
+    - "Customer portal behavior."
+    - "QR or shared balance link behavior."
+    - "Production deployment automation."
+    - "Business rule configuration for pricing, bonuses, deliveries, or balances."
+
+deliverables:
+  - "Root-level config.js module."
+  - "Environment variable loading through dotenv."
+  - "Development defaults for NODE_ENV, HOST, PORT, DATABASE_PATH, SESSION_SECRET, and BCRYPT_ROUNDS."
+  - "Server startup using configured host and port."
+  - "Session middleware using configured session secret."
+  - "Runtime environment value available for production-aware cookie behavior."
+  - "Database setup using configured SQLite database path."
+  - "Database helper using configured SQLite database path by default."
+  - "Bcrypt round setting available for password hashing utilities."
+
+risks:
+  - id: "R1"
+    description: "Runtime settings remain hardcoded across multiple files."
+    impact: "Future maintenance and environment changes become fragile."
+    mitigation: "Centralize runtime settings in config.js and import it where needed."
+  - id: "R2"
+    description: "Development defaults are mistaken for production-safe values."
+    impact: "Session security could be weakened outside local development."
+    mitigation: "Keep SESSION_SECRET configurable and treat the default as development-only."
+  - id: "R3"
+    description: "Database setup and runtime database access use different paths."
+    impact: "Setup may initialize one database while the app reads another."
+    mitigation: "Use config.databasePath in database/setup.js and database/database.js."
+  - id: "R4"
+    description: "Configuration becomes mixed with business rules."
+    impact: "Pricing, bonus, or delivery rules become harder to test and maintain."
+    mitigation: "Keep business rules in model files, not config.js."
+  - id: "R5"
+    description: "Local startup becomes dependent on a complete .env file."
+    impact: "Developer setup becomes harder than the MVP requires."
+    mitigation: "Provide sensible local defaults while allowing environment overrides."
+
+dependencies:
+  prerequisite_stories:
+    - "Story 1.1: Express And SQLite Application Foundation"
+  technical_dependencies:
+    - "Node.js runtime"
+    - "Express application foundation"
+    - "SQLite MVP persistence decision"
+    - "dotenv dependency"
+    - "database setup path"
+    - "session middleware"
+  downstream_dependencies:
+    - "Owner authentication uses sessionSecret and nodeEnv."
+    - "Password hashing uses bcryptRounds."
+    - "Database setup uses databasePath."
+    - "Database connection helper uses databasePath."
+    - "Automated tests rely on predictable runtime configuration."
+
+planned_files:
+  create:
+    - "config.js"
+  modify:
+    - "server.js"
+    - "database/setup.js"
+    - "database/database.js"
+    - "package.json"
+    - "package-lock.json"
+  no_change_expected:
+    - "routes/admin.js"
+    - "routes/customer.js"
+    - "views/"
+    - "public/"
+    - "models/package-purchase.js"
+    - "models/delivery-history.js"
+    - "models/dashboard.js"
+
+planned_routes:
+  new_routes: []
+  affected_routes:
+    - route: "GET /"
+      planned_impact: "No route behavior change; app startup and runtime config support the existing route."
+    - route: "/admin/*"
+      planned_impact: "No route behavior change; future admin sessions depend on configured session secret."
+    - route: "/customer/*"
+      planned_impact: "No route behavior change; future customer sessions depend on configured session secret."
+
+planned_database_changes:
+  schema_changes: []
+  data_changes: []
+  configuration_changes:
+    - "Introduce configurable SQLite database path."
+    - "Ensure setup and runtime database helpers use the same configured path."
+  expected_database_impact: >
+    No schema or business data change is planned. The story affects how the app
+    locates the SQLite database, not what tables or records exist.
+
+planned_tests:
+  automated:
+    - "Confirm application can start with configured defaults."
+    - "Confirm config.js exports expected runtime values."
+    - "Confirm server.js imports and uses configuration."
+    - "Confirm database/setup.js uses configured database path."
+    - "Confirm database/database.js uses configured database path by default."
+    - "Confirm npm test remains available."
+  manual:
+    - "Run npm run dev and confirm app starts on configured host and port."
+    - "Run npm run db:setup and confirm database initializes at configured path."
+  not_required:
+    - "Browser-level UI QA, because the story has no direct UI change."
+    - "Business workflow E2E tests, because package, delivery, and dashboard logic are outside this story."
+
+completion_criteria:
+  - "config.js exists and loads dotenv."
+  - "config.js exports nodeEnv, port, host, databasePath, sessionSecret, and bcryptRounds."
+  - "server.js uses config.js."
+  - "database/setup.js uses config.js."
+  - "database/database.js uses config.js."
+  - "The app can run locally with defaults."
+  - "Runtime values can be overridden by environment variables."
+  - "No business rules are moved into configuration."
+
+planning_explanation: |
+  Story 1.2 was planned as an application-foundation story rather than a user-facing feature. The owner does not directly interact with environment configuration, but every owner workflow depends on it. If the app cannot start predictably, cannot find the correct SQLite database, or cannot configure session behavior safely, then customer management, package purchases, deliveries, and dashboard metrics cannot be trusted.
+
+  The sprint goal was to make runtime configuration explicit and centralized. The planned work focused on creating a single root-level config.js module that loads environment variables and exposes a small set of values needed by the delivered app: runtime environment, host, port, database path, session secret, and bcrypt rounds. This keeps settings discoverable and prevents environment parsing from being duplicated across server, database, and model files.
+
+  The story scope was intentionally narrow. It was not intended to implement owner authentication, customer authentication, package purchase logic, delivery rules, or dashboard behavior. Instead, it prepared those later stories by giving them stable configuration values. Admin authentication later uses sessionSecret and nodeEnv. Password hashing later uses bcryptRounds. Database setup and runtime access use databasePath.
+
+  The main planning risk was hidden hardcoding. If database path, session secret, or host/port values were hardcoded in multiple places, the app would become harder to run and maintain. The planned mitigation was to import config.js from server.js, database/setup.js, and database/database.js. The delivered app follows this plan.
+
+  The second important risk was confusing local defaults with production readiness. The sprint planning accepted development defaults because the MVP needed to be easy to run locally. At the same time, SESSION_SECRET had to remain configurable so non-local environments could replace the development value. This planning distinction matters because the app is low-maintenance but should not ignore security basics.
+
+  The database impact was planned as configuration-only. Story 1.2 should not change schema or create business data. Its data responsibility was to ensure the app and setup script use the same SQLite database path. This reduces the chance that setup initializes one file while the running app reads another.
+
+  UI impact was intentionally minimal. No owner or customer screen was expected from this story. The benefit to UI is indirect: the app must run on a known host and port before any rendered page can be reviewed.
+
+  The sprint would be complete when config.js existed, dotenv was loaded, expected values were exported, server and database modules consumed the config, local startup still worked, database setup still worked, and no business rules were placed in configuration. The current implemented web app confirms this planned outcome.

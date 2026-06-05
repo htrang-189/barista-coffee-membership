@@ -8,6 +8,7 @@ const {
   createCustomerAccount,
   findCustomerById,
   rotateCustomerBalanceAccessToken,
+  resetCustomerPassword,
   searchCustomers
 } = require('../models/customer-account');
 const {
@@ -149,6 +150,14 @@ function pageMessage(query) {
 
   if (query.link === 'regenerated') {
     return '<div class="success-box">Customer balance link regenerated.</div>';
+  }
+
+  if (query.password === 'reset') {
+    return '<div class="success-box">Customer password reset. Share the temporary password with the customer securely.</div>';
+  }
+
+  if (query.error === 'missing-password') {
+    return '<div class="error-box">New temporary password is required.</div>';
   }
 
   if (query.error === 'zero-balance') {
@@ -613,6 +622,18 @@ router.get('/customers/:customerId', requireAdmin, async function showCustomerDe
           </aside>
         </div>
       </section>
+      <section class="card section-gap narrow-card">
+        <p class="eyebrow">Account access</p>
+        <h2>Reset customer password</h2>
+        <p class="muted">Share this temporary password with the customer securely.</p>
+        <form class="form" method="post" action="/admin/customers/${customer.id}/password-reset" data-loading-form>
+          <input type="hidden" name="csrfToken" value="${escapeHtml(response.locals.csrfToken)}">
+          <label>New temporary password
+            <input name="newPassword" type="password" required autocomplete="new-password">
+          </label>
+          <button class="button warning" type="submit">Reset customer password</button>
+        </form>
+      </section>
       <section class="card section-gap">
         <h2>Delivery history</h2>
         ${renderDeliveryHistory(deliveries, {
@@ -621,6 +642,30 @@ router.get('/customers/:customerId', requireAdmin, async function showCustomerDe
         }).replaceAll('{{CSRF_TOKEN}}', escapeHtml(response.locals.csrfToken))}
       </section>`
     });
+  } catch (error) {
+    next(error);
+  }
+});
+
+router.post('/customers/:customerId/password-reset', requireAdmin, requireCsrfToken, async function resetPasswordRoute(request, response, next) {
+  try {
+    const customerId = Number(request.params.customerId);
+    const customer = await findCustomerById(request.app.locals.database, customerId);
+
+    if (!customer) {
+      response.status(404).send('Customer not found.');
+      return;
+    }
+
+    const newPassword = String(request.body.newPassword || '');
+
+    if (!newPassword) {
+      response.redirect(`/admin/customers/${customerId}?error=missing-password`);
+      return;
+    }
+
+    await resetCustomerPassword(request.app.locals.database, customerId, newPassword);
+    response.redirect(`/admin/customers/${customerId}?password=reset`);
   } catch (error) {
     next(error);
   }

@@ -1,0 +1,206 @@
+phase: "Phase 1: Owner MVP"
+epic: "Epic 1: Application Foundation"
+story:
+  id: "1.3"
+  title: "Create SQLite Schema And Setup Script"
+output_type: "sprint-status.yaml"
+workflow_step: "Amelia: sprint-planning"
+status_snapshot: "Planned before development"
+final_delivery_status: "Implemented / Delivered"
+
+sprint_goal: >
+  Create the SQLite persistence foundation for the Owner MVP by defining the
+  core database schema and setup script needed to initialize the local database
+  consistently before owner workflows begin writing membership data.
+
+story_scope:
+  in_scope:
+    - "Create the SQLite schema file."
+    - "Create the database setup script."
+    - "Create or include migration support for later schema evolution."
+    - "Define tables for admin users, customer accounts, package purchases, delivery history, and admin action logs."
+    - "Define foreign key relationships between admins, customers, package purchases, and deliveries."
+    - "Define uniqueness constraints for admin usernames, customer phone values, customer login identifiers, and customer balance access tokens."
+    - "Define check constraints for non-negative balances, supported package sizes, non-negative package amount values, positive delivered cup quantities, and non-negative balance-after values."
+    - "Define indexes for common customer, package, delivery, and action-log lookups."
+    - "Use the configured SQLite database path from Story 1.2."
+    - "Seed or confirm an initial admin user during setup."
+  out_of_scope:
+    - "Admin login page and login route behavior."
+    - "Customer creation UI."
+    - "Package purchase form behavior."
+    - "Delivery recording behavior."
+    - "Dashboard metric rendering."
+    - "Customer portal behavior."
+    - "QR/share balance link UI."
+    - "Payment processing or POS integration."
+    - "External database infrastructure."
+    - "PostgreSQL migration implementation."
+
+deliverables:
+  - "database/schema.sql"
+  - "database/setup.js"
+  - "database/migrations.js"
+  - "SQLite tables for admin users, customer accounts, package purchases, delivery history, and admin action logs."
+  - "Schema constraints that protect ledger data integrity."
+  - "Indexes for common lookup and history queries."
+  - "Setup script that creates the database directory when needed."
+  - "Setup script that opens the configured SQLite database."
+  - "Setup script that executes schema SQL."
+  - "Setup script that runs migrations."
+  - "Setup script that seeds or confirms the initial admin user."
+
+risks:
+  - id: "R1"
+    description: "Schema misses a core Owner MVP entity."
+    impact: "Later stories require disruptive database rework."
+    mitigation: "Plan schema around the full owner ledger workflow: admins, customers, package purchases, deliveries, balances, and logs."
+  - id: "R2"
+    description: "Data integrity constraints are too weak."
+    impact: "Invalid balances, duplicate customers, invalid package sizes, or orphaned records could enter the ledger."
+    mitigation: "Use unique constraints, check constraints, foreign keys, and indexes."
+  - id: "R3"
+    description: "Database setup requires manual SQL execution."
+    impact: "Local setup becomes fragile and inconsistent."
+    mitigation: "Provide database/setup.js and npm db setup command support."
+  - id: "R4"
+    description: "Schema becomes over-scoped with non-MVP concepts."
+    impact: "The app becomes harder to maintain and no longer matches the small-shop MVP."
+    mitigation: "Exclude loyalty, ordering, payment processing, POS, and multi-shop tables."
+  - id: "R5"
+    description: "Future schema changes are difficult."
+    impact: "Later token or delivery-voiding changes require manual resets."
+    mitigation: "Include database/migrations.js for incremental schema evolution."
+  - id: "R6"
+    description: "SQLite foreign key definitions are not enforced at runtime."
+    impact: "Relational integrity may not be protected."
+    mitigation: "Coordinate with database helper story to enable PRAGMA foreign_keys = ON."
+
+dependencies:
+  prerequisite_stories:
+    - "Story 1.1: Express And SQLite Application Foundation"
+    - "Story 1.2: Add Environment Configuration"
+  technical_dependencies:
+    - "SQLite MVP persistence decision"
+    - "Configured database path"
+    - "Node.js runtime"
+    - "database/database.js openDatabase helper"
+    - "admin-user model support for initial admin seeding"
+  downstream_dependencies:
+    - "Owner authentication depends on admin_users."
+    - "Customer management depends on customer_accounts."
+    - "Package purchase recording depends on package_purchases."
+    - "Delivery recording and voiding depend on delivery_history."
+    - "Dashboard metrics depend on customer, package, and delivery tables."
+    - "Customer portal depends on customer account, balance, package history, and delivery history data."
+    - "Shared balance links depend on customer balance_access_token."
+
+planned_files:
+  create:
+    - "database/schema.sql"
+    - "database/setup.js"
+    - "database/migrations.js"
+  modify:
+    - "package.json"
+    - "package-lock.json"
+  referenced:
+    - "config.js"
+    - "database/database.js"
+    - "models/admin-user.js"
+  no_change_expected:
+    - "routes/admin.js"
+    - "routes/customer.js"
+    - "views/"
+    - "public/"
+
+planned_routes:
+  new_routes: []
+  affected_routes: []
+  explanation: >
+    Story 1.3 is a database foundation story. It does not add HTTP routes. Later
+    route stories will rely on the schema when they create admins, customers,
+    package purchases, deliveries, and dashboard views.
+
+planned_database_changes:
+  schema_changes:
+    - table: "admin_users"
+      purpose: "Store owner/admin credentials and role metadata."
+      key_constraints:
+        - "username UNIQUE"
+        - "password_hash NOT NULL"
+        - "role default admin"
+    - table: "customer_accounts"
+      purpose: "Store customer identity, contact details, login credentials, access token, and current balance."
+      key_constraints:
+        - "phone UNIQUE"
+        - "login_identifier UNIQUE"
+        - "balance_access_token UNIQUE"
+        - "current_balance >= 0"
+    - table: "package_purchases"
+      purpose: "Store package purchase events, credited cups, bonus cups, and recorded VND amount in cents."
+      key_constraints:
+        - "package_size IN (10, 20, 30)"
+        - "bonus_cups >= 0"
+        - "total_cups_added > 0"
+        - "amount_paid_cents >= 0"
+        - "customer/admin foreign keys"
+    - table: "delivery_history"
+      purpose: "Store delivery/cup usage events, delivered quantity, balance after delivery, notes, and void metadata."
+      key_constraints:
+        - "delivered_cups > 0"
+        - "balance_after >= 0"
+        - "customer/admin foreign keys"
+        - "voided_by_admin_id foreign key"
+    - table: "admin_action_logs"
+      purpose: "Store owner/admin operational action history."
+      key_constraints:
+        - "admin_user_id foreign key"
+  data_changes:
+    - "Seed or confirm initial admin user during setup."
+  indexes:
+    - "customer phone index"
+    - "customer login identifier index"
+    - "customer current balance index"
+    - "package purchase customer/date/package size indexes"
+    - "delivery history customer/date indexes"
+    - "admin action log admin/date indexes"
+
+planned_tests:
+  automated:
+    - "Run database setup and confirm schema executes successfully."
+    - "Confirm required tables exist."
+    - "Confirm unique customer/admin constraints reject duplicates."
+    - "Confirm package size constraints reject unsupported sizes."
+    - "Confirm balance constraints reject negative values."
+    - "Confirm delivery quantity constraints reject non-positive values."
+    - "Confirm setup can seed or confirm an initial admin user."
+    - "Run later workflow tests that create customers, purchases, deliveries, and dashboard data."
+  manual:
+    - "Run npm run db:setup."
+    - "Confirm database file is created at configured path."
+  not_required:
+    - "Browser QA, because this story has no direct UI."
+    - "Route E2E tests for owner workflows, because route behavior belongs to later stories."
+
+completion_criteria:
+  - "database/schema.sql exists."
+  - "database/setup.js exists."
+  - "database/migrations.js exists."
+  - "Setup uses config.databasePath."
+  - "Setup creates the database directory when needed."
+  - "Setup executes schema SQL successfully."
+  - "Setup runs migrations."
+  - "Setup seeds or confirms the initial admin user."
+  - "Core tables, constraints, and indexes exist."
+  - "No external database infrastructure is required."
+
+planning_explanation: |
+  Story 1.3 was planned as the persistence foundation for the Owner MVP. The business reason was straightforward: a prepaid cup membership app is only useful if its data can be trusted. The owner needs customer balances, package purchase records, delivery history, and dashboard metrics to persist reliably. Without a schema and setup script, later stories would have no stable source of truth.
+
+  The sprint goal was to create a local SQLite schema and setup flow that matched the small-shop MVP. The app did not need PostgreSQL, payment infrastructure, loyalty tables, POS records, or multi-shop tenancy. It needed a focused ledger schema with enough constraints to protect the owner from obvious data corruption.
+
+  The planned schema centered on five core tables. admin_users supports owner authentication. customer_accounts stores customer identity, contact information, credentials, access token, and balance. package_purchases records package events, bonus cups, total credited cups, and VND amount stored in cents. delivery_history records cup usage and later supports void/cancel behavior. admin_action_logs supports owner operational traceability.
+
+  The planned setup script was as important as the schema itself. A schema file alone would still require manual setup. The setup script needed to create the database directory, open the configured SQLite file, execute schema SQL, run migrations, and seed or confirm an initial admin user. This keeps the app easy to run locally and aligns with the low-maintenance MVP goal.
+
+  The largest risks were missing constraints, over-scoping the schema, and setup drift. The planned mitigations were to use explicit constraints, stay focused on ledger entities, and provide scripted setup. The completed application confirms this plan: the delivered schema and setup script support the Owner MVP, Customer Portal, QR/shared access, delivery voiding, dashboard metrics, and automated tests without requiring external database infrastructure.

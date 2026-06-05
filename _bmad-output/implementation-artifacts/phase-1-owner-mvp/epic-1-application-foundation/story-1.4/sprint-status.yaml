@@ -1,0 +1,168 @@
+phase: "Phase 1: Owner MVP"
+epic: "Epic 1: Application Foundation"
+story:
+  id: "1.4"
+  title: "Add Database Connection Helper"
+output_type: "sprint-status.yaml"
+workflow_step: "Amelia: sprint-planning"
+status_snapshot: "Planned before development"
+final_delivery_status: "Implemented / Delivered"
+
+sprint_goal: >
+  Add a reusable SQLite database connection helper so setup scripts, migrations,
+  models, and tests can open the configured database consistently, enforce
+  foreign keys, and perform basic query operations without duplicating database
+  plumbing.
+
+story_scope:
+  in_scope:
+    - "Create the database connection helper module."
+    - "Open the configured SQLite database by default."
+    - "Allow an explicit database path override for tests and controlled contexts."
+    - "Enable SQLite foreign key enforcement on opened connections."
+    - "Provide a reusable statement execution helper."
+    - "Provide a reusable single-row query helper."
+    - "Provide a reusable multi-row query helper."
+    - "Log low-level SQLite errors consistently."
+    - "Export helper functions for setup scripts, migrations, models, and tests."
+  out_of_scope:
+    - "Creating or changing database schema."
+    - "Adding business-specific model functions."
+    - "Implementing admin authentication."
+    - "Implementing customer management."
+    - "Implementing package purchase logic."
+    - "Implementing delivery logic."
+    - "Implementing dashboard metrics."
+    - "Adding routes or UI components."
+    - "Adding an ORM or external database infrastructure."
+
+deliverables:
+  - "database/database.js"
+  - "openDatabase(databasePath)"
+  - "runStatement(database, sql, params, callback)"
+  - "getRow(database, sql, params, callback)"
+  - "getAllRows(database, sql, params, callback)"
+  - "Foreign key enforcement through PRAGMA foreign_keys = ON."
+  - "Consistent SQLite error logging."
+  - "Support for configured database path from config.js."
+  - "Support for explicit database path override."
+
+risks:
+  - id: "R1"
+    description: "Every model opens SQLite independently."
+    impact: "Connection behavior becomes inconsistent and harder to maintain."
+    mitigation: "Centralize connection behavior in database/database.js."
+  - id: "R2"
+    description: "Foreign key constraints are defined but not enforced."
+    impact: "Orphaned package or delivery records could enter the ledger."
+    mitigation: "Run PRAGMA foreign_keys = ON when the database opens."
+  - id: "R3"
+    description: "Query errors are swallowed."
+    impact: "Database failures become hard to diagnose."
+    mitigation: "Log SQLite errors and pass them back through callbacks."
+  - id: "R4"
+    description: "The helper becomes too abstract or business-specific."
+    impact: "Small MVP database access becomes harder to understand."
+    mitigation: "Limit helper to opening the database and basic query operations."
+  - id: "R5"
+    description: "Tests mutate the real local database."
+    impact: "Tests become unsafe or flaky."
+    mitigation: "Allow explicit database path overrides for test databases."
+
+dependencies:
+  prerequisite_stories:
+    - "Story 1.2: Add Environment Configuration"
+    - "Story 1.3: Create SQLite Schema And Setup Script"
+  technical_dependencies:
+    - "sqlite3 dependency"
+    - "config.js databasePath"
+    - "SQLite MVP persistence decision"
+    - "Node.js CommonJS module structure"
+  downstream_dependencies:
+    - "database/setup.js uses openDatabase."
+    - "database/migrations.js uses runStatement and getAllRows."
+    - "models/admin-user.js uses getRow and runStatement."
+    - "models/customer-account.js uses database helpers."
+    - "models/package-purchase.js uses database helpers."
+    - "models/delivery-history.js uses database helpers."
+    - "models/dashboard.js uses database helpers."
+    - "Automated tests use explicit database paths and helper-backed app setup."
+
+planned_files:
+  create:
+    - "database/database.js"
+  modify:
+    - "database/setup.js"
+    - "database/migrations.js"
+    - "models/admin-user.js"
+    - "models/customer-account.js"
+    - "models/package-purchase.js"
+    - "models/delivery-history.js"
+    - "models/dashboard.js"
+    - "tests/* as later stories require helper-backed database access"
+  no_change_expected:
+    - "database/schema.sql"
+    - "routes/admin.js"
+    - "routes/customer.js"
+    - "views/"
+    - "public/"
+
+planned_routes:
+  new_routes: []
+  affected_routes: []
+  explanation: >
+    Story 1.4 is database infrastructure. It should not add routes or change
+    HTTP behavior. Later routes rely on models that use this helper.
+
+planned_database_changes:
+  schema_changes: []
+  data_changes: []
+  connection_behavior_changes:
+    - "Open SQLite through a shared helper."
+    - "Use configured database path by default."
+    - "Support explicit database path override."
+    - "Enable PRAGMA foreign_keys = ON after opening the connection."
+  expected_database_impact: >
+    No schema or business record changes are planned. The story changes how
+    application code opens and queries SQLite, not the structure of stored data.
+
+planned_tests:
+  automated:
+    - "Open a database using the configured default path."
+    - "Open a database using an explicit temporary test path."
+    - "Confirm foreign key enforcement is enabled."
+    - "Use runStatement to insert or update a row."
+    - "Use getRow to read one row."
+    - "Use getAllRows to read multiple rows."
+    - "Run later model and route tests that depend on database helpers."
+  manual:
+    - "Run npm run db:setup to confirm setup can use openDatabase."
+    - "Run npm test to confirm helper-backed tests execute successfully."
+  not_required:
+    - "Browser QA, because this story has no direct UI."
+    - "Route E2E tests specific to this helper, because HTTP behavior is out of scope."
+
+completion_criteria:
+  - "database/database.js exists."
+  - "openDatabase is exported."
+  - "runStatement is exported."
+  - "getRow is exported."
+  - "getAllRows is exported."
+  - "openDatabase uses config.databasePath by default."
+  - "openDatabase accepts an explicit database path override."
+  - "openDatabase enables SQLite foreign keys."
+  - "Query helper errors are logged and returned to callbacks."
+  - "No business rules are implemented inside the helper."
+
+planning_explanation: |
+  Story 1.4 was planned as a small but important foundation story. The Owner MVP needs consistent database behavior because every major workflow depends on SQLite: admin login, customer creation, package purchases, delivery recording, delivery voiding, dashboard metrics, customer portal views, and shared access links.
+
+  The sprint goal was to prevent duplicated database plumbing. Without a helper, every model or setup script might open SQLite differently, forget foreign key enforcement, or handle errors inconsistently. That would create maintenance risk in a ledger-style application where data reliability is central to user trust.
+
+  The planned helper was intentionally simple. It would not be an ORM and would not contain product business rules. It would provide four practical functions: open the database, run a statement, read one row, and read many rows. This matches the app's MVP scale and keeps SQL behavior visible.
+
+  The most important technical requirement was foreign key enforcement. SQLite requires foreign keys to be enabled on each connection. The helper therefore needed to run PRAGMA foreign_keys = ON whenever a database connection is opened. This supports relationships between admins, customers, package purchases, and deliveries.
+
+  Testability was also a major planning concern. Tests should not mutate the real local app database. The helper needed to allow explicit database path overrides so automated tests could use temporary SQLite files. The delivered application follows this pattern across the test suite.
+
+  The story would be complete when database/database.js exported the helper functions, used config.databasePath by default, accepted explicit overrides, enabled foreign keys, logged low-level SQLite errors, and stayed free of membership business rules.

@@ -10,6 +10,7 @@ Result: PASS
 - Phase 2 Customer Portal.
 - QR/share balance link enhancement.
 - Customer portal UI changes: hero greeting, balance-focused membership layout, cup progress bar, notification bell, and low-balance messaging.
+- Owner-managed customer password reset regression coverage.
 
 ## Framework Detection
 
@@ -46,6 +47,7 @@ Result: PASS
 - Customer and shared balance pages render notification bell, popover, close button, low-balance message, and no raw `{{...}}` placeholders.
 - Customer notification JavaScript includes periodic non-continuous bell shake behavior.
 - Customer pages remain read-only and continue hiding payment amounts/admin actions.
+- Owner-managed customer password reset is covered without adding customer self-service reset.
 
 ## Automated Test Result
 
@@ -57,12 +59,12 @@ npm test
 
 Result:
 
-- Tests: 28
-- Passing: 28
+- Tests: 30
+- Passing: 30
 - Failing: 0
 - Cancelled: 0
 - Skipped: 0
-- Duration: about 23 seconds
+- Duration: about 26 seconds
 
 ## Bugs Found And Fixed
 

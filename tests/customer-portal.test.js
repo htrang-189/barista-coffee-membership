@@ -52,6 +52,19 @@ function countMatches(text, pattern) {
   return (text.match(pattern) || []).length;
 }
 
+function getRow(database, sql, params) {
+  return new Promise(function getRowPromise(resolve, reject) {
+    database.get(sql, params || [], function handleRow(error, row) {
+      if (error) {
+        reject(error);
+        return;
+      }
+
+      resolve(row || null);
+    });
+  });
+}
+
 async function buildContext() {
   const tempDirectory = fs.mkdtempSync(path.join(os.tmpdir(), 'barista-customer-portal-'));
   const databasePath = path.join(tempDirectory, 'app.db');
@@ -278,6 +291,95 @@ test('customer logout clears customer session', async function testCustomerLogou
       .get('/customer/balance')
       .expect(302)
       .expect('Location', '/customer/login?message=session-expired');
+  } finally {
+    await cleanup(context);
+  }
+});
+
+test('admin can reset customer password and customer must use the new password', async function testAdminCustomerPasswordReset() {
+  const context = await buildContext();
+
+  try {
+    const adminAgent = await loginAdmin(context.app);
+    const detailPage = await adminAgent.get(`/admin/customers/${context.firstCustomer.id}`).expect(200);
+    const csrfToken = extractCsrfToken(detailPage.text);
+
+    assert.match(detailPage.text, /Reset customer password/);
+    assert.match(detailPage.text, /Share this temporary password with the customer securely\./);
+
+    await adminAgent
+      .post(`/admin/customers/${context.firstCustomer.id}/password-reset`)
+      .type('form')
+      .send({
+        csrfToken,
+        newPassword: 'new-temporary-password'
+      })
+      .expect(302)
+      .expect('Location', `/admin/customers/${context.firstCustomer.id}?password=reset`);
+
+    const passwordRow = await getRow(
+      context.database,
+      'SELECT password_hash FROM customer_accounts WHERE id = ?',
+      [context.firstCustomer.id]
+    );
+    assert.ok(passwordRow.password_hash.startsWith('$2'));
+    assert.notEqual(passwordRow.password_hash, 'new-temporary-password');
+
+    const oldPasswordAgent = request.agent(context.app);
+    const oldLoginPage = await oldPasswordAgent.get('/customer/login').expect(200);
+    const oldLoginCsrfToken = extractCsrfToken(oldLoginPage.text);
+
+    await oldPasswordAgent
+      .post('/customer/login')
+      .type('form')
+      .send({
+        csrfToken: oldLoginCsrfToken,
+        loginIdentifier: 'mai.nguyen',
+        password: 'customer-password'
+      })
+      .expect(401);
+
+    await loginCustomer(context.app, 'mai.nguyen', 'new-temporary-password');
+  } finally {
+    await cleanup(context);
+  }
+});
+
+test('non-admin users cannot reset customer passwords', async function testNonAdminCustomerPasswordResetBlocked() {
+  const context = await buildContext();
+
+  try {
+    await request(context.app)
+      .post(`/admin/customers/${context.firstCustomer.id}/password-reset`)
+      .type('form')
+      .send({ newPassword: 'not-allowed' })
+      .expect(302)
+      .expect('Location', '/admin/login?message=session-expired');
+
+    const customerAgent = await loginCustomer(context.app, 'mai.nguyen', 'customer-password');
+    const customerBalancePage = await customerAgent.get('/customer/balance').expect(200);
+    const customerCsrfToken = extractCsrfToken(customerBalancePage.text);
+
+    await customerAgent
+      .post(`/admin/customers/${context.firstCustomer.id}/password-reset`)
+      .type('form')
+      .send({
+        csrfToken: customerCsrfToken,
+        newPassword: 'not-allowed'
+      })
+      .expect(302)
+      .expect('Location', '/admin/login?message=session-expired');
+
+    await customerAgent
+      .post(`/customer/customers/${context.firstCustomer.id}/password-reset`)
+      .type('form')
+      .send({
+        csrfToken: customerCsrfToken,
+        newPassword: 'not-allowed'
+      })
+      .expect(404);
+
+    await loginCustomer(context.app, 'mai.nguyen', 'customer-password');
   } finally {
     await cleanup(context);
   }

@@ -199,6 +199,29 @@ async function rotateCustomerBalanceAccessToken(database, customerId) {
   return findCustomerById(database, customerId);
 }
 
+async function resetCustomerPassword(database, customerId, newPassword) {
+  if (!newPassword) {
+    throw new Error('New temporary password is required.');
+  }
+
+  const passwordHash = await hashPassword(newPassword);
+  const result = await run(
+    database,
+    `UPDATE customer_accounts
+     SET password_hash = ?, updated_at = CURRENT_TIMESTAMP
+     WHERE id = ?`,
+    [passwordHash, customerId]
+  );
+
+  if (result.changes === 0) {
+    const error = new Error('Customer was not found.');
+    error.code = 'CUSTOMER_NOT_FOUND';
+    throw error;
+  }
+
+  return findCustomerById(database, customerId);
+}
+
 async function backfillMissingBalanceAccessTokens(database) {
   const customers = await all(
     database,
@@ -254,6 +277,7 @@ module.exports = {
   findCustomerByLoginIdentifier,
   findCustomerByPhone,
   generateBalanceAccessToken,
+  resetCustomerPassword,
   rotateCustomerBalanceAccessToken,
   searchCustomers
 };

@@ -136,7 +136,7 @@ npm test
 
 Current QA evidence:
 
-- `28` tests passing.
+- `30` tests passing.
 - Admin authentication and logout.
 - Admin route protection.
 - Customer creation, duplicate checks, search, and protected routes.
@@ -148,6 +148,7 @@ Current QA evidence:
 - Voided deliveries excluded from dashboard delivered-cup totals.
 - Dashboard metrics.
 - Admin delivery pagination newest first.
+- Owner-managed customer password reset.
 
 ## 8. Implementation Status
 

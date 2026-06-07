@@ -1,0 +1,195 @@
+phase: "Phase 1: Owner MVP"
+epic: "Epic 2: Owner Authentication"
+story:
+  id: "2.1"
+  title: "Implement Owner Authentication And Route Protection"
+output_type: "sprint-status.yaml"
+workflow_step: "Amelia: sprint-planning"
+status_snapshot: "Planned before development"
+final_delivery_status: "Implemented / Delivered"
+
+sprint_goal: >
+  Deliver secure owner access to the admin portal so the coffee shop owner can
+  sign in, maintain a protected session, sign out, and access `/admin/*`
+  workflows only after successful authentication.
+
+story_scope:
+  in_scope:
+    - "Hash admin passwords before storage."
+    - "Verify submitted passwords against stored hashes."
+    - "Support creation or seeding of an initial admin user."
+    - "Implement admin login route behavior."
+    - "Implement admin logout route behavior."
+    - "Create owner session state after successful login."
+    - "Redirect authenticated admins away from the login page."
+    - "Protect admin routes from unauthenticated access."
+    - "Return generic login errors without exposing credential details."
+  out_of_scope:
+    - "Customer authentication."
+    - "Forgot-password or recovery flow."
+    - "Email or SMS notifications."
+    - "Multi-factor authentication."
+    - "Role hierarchy beyond the single admin owner role."
+    - "Production-only hardening outside the MVP session model."
+
+deliverables:
+  - "models/password.js"
+  - "models/admin-user.js"
+  - "middleware/auth.js"
+  - "routes/admin.js login/logout flow"
+  - "views/shared/admin-login.html"
+  - "Session-backed owner auth behavior for `/admin/*`"
+
+risks:
+  - id: "R1"
+    description: "Admin password is stored in plaintext."
+    impact: >
+      The SQLite database would expose the owner's real password, creating a
+      severe security flaw in the admin portal.
+    mitigation: >
+      Use bcrypt hashing before insert and persist only `password_hash`.
+  - id: "R2"
+    description: "Unauthenticated users can reach protected admin routes."
+    impact: >
+      Customer balances, purchases, deliveries, and dashboard information could
+      be accessed or changed without authorization.
+    mitigation: >
+      Add `requireAdmin` middleware and apply it to admin routes.
+  - id: "R3"
+    description: "Login failure messages reveal sensitive details."
+    impact: >
+      Attackers or unintended users could gain information about usernames or
+      password validity.
+    mitigation: >
+      Return a generic invalid-login message and avoid echoing credential data.
+  - id: "R4"
+    description: "Auth logic is scattered across routes and models."
+    impact: >
+      The implementation becomes harder to review and maintain, increasing
+      regression risk.
+    mitigation: >
+      Separate password logic, admin-user logic, and route/session logic across
+      dedicated modules.
+
+dependencies:
+  prerequisite_stories:
+    - "Story 1.1: Build Local Express And SQLite Foundation"
+    - "Story 1.2: Establish Configuration, Data Access, And Test Foundation"
+  archived_micro_story_dependencies:
+    - "Story 2.1: Add Password Hashing Utilities"
+    - "Story 2.2: Seed Or Create Initial Admin User"
+    - "Story 2.3: Implement Admin Login And Logout"
+    - "Story 2.4: Protect Admin Routes"
+  technical_dependencies:
+    - "express-session"
+    - "bcrypt"
+    - "config.js sessionSecret and bcryptRounds"
+    - "admin_users table with password_hash"
+    - "database access helpers"
+  downstream_dependencies:
+    - "Story 2.2: Add Owner Authentication Security Tests"
+    - "All Phase 1 owner workflows under `/admin/*`"
+
+planned_files:
+  create:
+    - "models/password.js"
+    - "middleware/auth.js"
+    - "views/shared/admin-login.html"
+  modify:
+    - "models/admin-user.js"
+    - "routes/admin.js"
+    - "server.js"
+    - "config.js"
+    - "database/setup.js"
+  no_change_expected:
+    - "routes/customer.js"
+    - "public/js/admin.js"
+    - "customer-facing templates"
+
+planned_routes:
+  new_routes:
+    - "GET /admin/login"
+    - "POST /admin/login"
+    - "POST /admin/logout"
+  affected_routes:
+    - "GET /admin/dashboard"
+    - "GET /admin/customers"
+    - "GET /admin/customers/new"
+    - "POST /admin/customers"
+    - "GET /admin/customers/:customerId"
+  route_protection_plan:
+    - "Redirect unauthenticated users to /admin/login?message=session-expired"
+    - "Redirect authenticated admins from /admin/login to /admin/dashboard"
+
+planned_database_changes:
+  schema_changes: []
+  data_changes:
+    - "Create or reuse an initial admin record with hashed password."
+  behavior_changes:
+    - "Admin password is stored as bcrypt hash in admin_users.password_hash."
+    - "Authentication compares submitted credentials to stored hash."
+  explanation: >
+    No schema change is required because `admin_users.password_hash` already
+    exists. The change is in how credentials are created and verified.
+
+planned_tests:
+  automated:
+    - name: "Admin password is stored as a bcrypt hash"
+      purpose: "Verify no plaintext credential storage."
+    - name: "Admin login success creates a session and opens dashboard"
+      purpose: "Verify happy-path owner access."
+    - name: "Admin login failure shows a generic error"
+      purpose: "Verify secure failure behavior."
+    - name: "Unauthenticated admin route access redirects to login"
+      purpose: "Verify route protection."
+    - name: "Logout clears the admin session"
+      purpose: "Verify session termination."
+  manual:
+    - "Sign in through /admin/login and confirm redirect to /admin/dashboard."
+    - "Attempt to open /admin/dashboard without a session and confirm redirect."
+  not_required:
+    - "Customer portal testing"
+    - "Password recovery testing"
+    - "Browser visual QA beyond basic auth flow behavior"
+
+completion_criteria:
+  - "Owner credentials are stored as hashes, not plaintext."
+  - "An admin user can be created or seeded securely."
+  - "GET /admin/login renders successfully for unauthenticated users."
+  - "POST /admin/login authenticates valid credentials."
+  - "POST /admin/login rejects invalid credentials with a generic error."
+  - "Authenticated admins receive a session and access to `/admin/*`."
+  - "POST /admin/logout clears the session."
+  - "Protected admin routes redirect unauthenticated users to the login page."
+
+planning_explanation: |
+  Story 2.1 was planned as the first owner-facing security story, but its real
+  value extended beyond a simple login screen. The admin portal controls the
+  prepaid cup ledger, customer records, package purchases, deliveries, and
+  dashboard metrics. That means authentication had to be treated as an
+  operational control, not just a convenience feature.
+
+  The sprint plan therefore combines four pieces that had originally been
+  tracked as smaller technical tasks: password hashing, initial admin creation,
+  login/logout workflow, and route protection. In practice these concerns form
+  one business capability: the owner can securely access the admin portal and
+  nobody else can use its core routes without a valid session.
+
+  The implementation boundary was designed to keep responsibilities clear.
+  Password security belongs in `models/password.js`, admin credential lookup and
+  verification belong in `models/admin-user.js`, and session/redirect behavior
+  belongs in route and middleware layers. This separation allows the story to
+  stay maintainable while still delivering a complete owner authentication
+  capability.
+
+  The biggest planning risk was insecure credential handling. If the password
+  were stored in plaintext or compared directly instead of using bcrypt, the
+  entire owner portal would rest on an unsafe foundation. The sprint plan
+  therefore assumes bcrypt-based hashing, configuration-driven bcrypt rounds,
+  generic login failure messages, and explicit protected-route middleware.
+
+  The testing plan focuses on behavior that proves the story is safe and usable:
+  hashed password storage, successful login, failed login, protected-route
+  redirects, and logout session clearing. These checks are enough to validate
+  the story as a business-capability unit before broader owner workflows build
+  on top of it.

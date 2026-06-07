@@ -1,0 +1,194 @@
+phase: "Phase 1: Owner MVP"
+epic: "Epic 5: Delivery Recording And History"
+story:
+  id: "5.1"
+  title: "Implement Multi-Cup Delivery And Balance Protection"
+output_type: "sprint-status.yaml"
+workflow_step: "Amelia: sprint-planning"
+status_snapshot: "Planned before development"
+final_delivery_status: "Implemented / Delivered"
+
+sprint_goal: >
+  Deliver a delivery-recording workflow that lets the coffee shop owner subtract
+  one or more cups from a customer’s prepaid balance, prevent impossible
+  deliveries, and keep the delivery ledger synchronized with the current
+  balance.
+
+story_scope:
+  in_scope:
+    - "Support delivery of more than one cup at a time."
+    - "Accept only positive whole-number delivery quantities."
+    - "Block delivery attempts when the customer balance is zero."
+    - "Block delivery attempts when the requested cups exceed the current balance."
+    - "Update the customer balance in the same transaction as the delivery record."
+    - "Store the delivered quantity and the resulting balance after delivery."
+    - "Expose delivery history for the customer record."
+    - "Keep delivery records as permanent ledger events."
+  out_of_scope:
+    - "Customer-initiated redemption."
+    - "Partial cup redemption or fractional quantities."
+    - "Manual negative balance adjustments."
+    - "Voiding or reversing delivery records, which is a separate story."
+    - "Customer-facing consumption editing."
+    - "Any changes to package purchase pricing or bonus logic."
+
+deliverables:
+  - "Delivery record model with transactional balance subtraction."
+  - "Owner UI form for recording delivered cups."
+  - "Balance-protection validation for zero-balance and over-balance attempts."
+  - "Delivery history display on the customer detail page."
+  - "Automated tests for valid delivery, invalid delivery, and ledger consistency."
+
+risks:
+  - id: "R1"
+    description: "The workflow is limited to a single cup and does not match actual shop use."
+    impact: >
+      The owner would need multiple repetitive actions to record one visit, which
+      slows service and increases input error.
+    mitigation: >
+      Treat delivered cups as a positive whole-number quantity rather than a fixed one-cup action.
+  - id: "R2"
+    description: "The app allows the owner to deliver more cups than remain in the balance."
+    impact: >
+      The prepaid ledger becomes invalid and customer balances lose trust.
+    mitigation: >
+      Validate the requested quantity against the current balance before writing the record.
+  - id: "R3"
+    description: "Delivery is recorded even when the balance is already zero."
+    impact: >
+      The ledger would drift into negative territory or create confusing records.
+    mitigation: >
+      Block zero-balance deliveries and surface an explicit validation message.
+  - id: "R4"
+    description: "The balance update and delivery insert are not atomic."
+    impact: >
+      The customer balance and delivery history can disagree after a failure.
+    mitigation: >
+      Use a transaction so the record and balance change succeed or fail together.
+  - id: "R5"
+    description: "Delivery history is not retained with enough detail."
+    impact: >
+      The owner cannot audit prior consumption or understand why a balance changed.
+    mitigation: >
+      Store delivered quantity and balance-after values in the delivery ledger.
+
+dependencies:
+  prerequisite_stories:
+    - "Story 1.1: Build Local Express And SQLite Foundation"
+    - "Story 1.2: Establish Configuration, Data Access, And Test Foundation"
+    - "Story 2.1: Implement Owner Authentication And Route Protection"
+    - "Story 3.1: Implement Customer Account Management"
+    - "Story 3.2: Add Customer Search, Detail, And Validation Coverage"
+    - "Story 4.1: Implement Package Purchase, Fixed Pricing, And Bonus Crediting"
+    - "Story 4.2: Add Package Purchase History And Tests"
+  technical_dependencies:
+    - "models/delivery-history.js"
+    - "customer_accounts.current_balance"
+    - "delivery_history table"
+    - "owner-authenticated admin portal"
+    - "customer detail route in the admin area"
+  downstream_dependencies:
+    - "Delivery voiding and history correction stories"
+    - "Customer portal balance and history display"
+    - "Low-balance warning and notification behavior"
+    - "Dashboard metrics that rely on delivery activity"
+
+planned_files:
+  create:
+    - "models/delivery-history.js"
+  modify:
+    - "routes/admin.js"
+    - "views/admin/customer-detail.*"
+    - "views/admin/deliveries.*"
+    - "tests/phase1-owner.test.js"
+    - "tests/e2e-owner-customer-flow.test.js"
+
+planned_routes:
+  new_routes:
+    - "POST /admin/customers/:customerId/deliveries"
+  affected_routes:
+    - "GET /admin/customers/:customerId"
+    - "GET /admin/customers/:customerId/deliveries"
+    - "GET /admin/deliveries"
+  route_behavior_plan:
+    - "Allow the owner to submit a positive whole-number cup count."
+    - "Reject zero-balance delivery attempts."
+    - "Reject delivery attempts that exceed the available balance."
+    - "Write delivery history and update balance together."
+    - "Render delivery history in newest-first order."
+
+planned_database_changes:
+  schema_changes:
+    - "delivery_history table must store customer_id, delivered_cups, balance_before, balance_after, created_by_admin_id, and created_at."
+  behavior_changes:
+    - "Subtract delivered cups from customer_accounts.current_balance inside one transaction."
+    - "Store the resulting balance after delivery for ledger traceability."
+    - "Keep delivery records immutable once written."
+  explanation: >
+    The database must treat delivery as a ledger event, not a free-form edit.
+    The delivery record needs enough information to explain both the quantity
+    removed and the balance remaining after the transaction so that the owner
+    and later reports can trust the ledger.
+
+planned_tests:
+  automated:
+    - name: "Multi-cup delivery reduces balance correctly"
+      purpose: "Verify that a valid positive quantity subtracts the correct number of cups."
+    - name: "Zero-balance delivery is rejected"
+      purpose: "Verify that the system blocks delivery when no cups remain."
+    - name: "Over-balance delivery is rejected"
+      purpose: "Verify that the system blocks impossible delivery quantities."
+    - name: "Delivery history stores balance-after value"
+      purpose: "Verify that the ledger records the post-delivery balance."
+    - name: "Delivery update is transactional"
+      purpose: "Verify that balance and history remain consistent after failures."
+  manual:
+    - "Open a customer detail page and record a delivery of more than one cup."
+    - "Confirm the remaining balance and delivery history update immediately."
+    - "Try a delivery larger than the remaining balance and confirm it is blocked."
+  not_required:
+    - "Customer self-service delivery entry."
+    - "Payment processing or purchase logic."
+    - "Delivery voiding and reversal testing."
+
+completion_criteria:
+  - "The owner can record a delivery of one or more cups in a single action."
+  - "Invalid delivery quantities are rejected before the ledger is written."
+  - "The customer balance is reduced exactly by the delivered quantity."
+  - "The delivery history shows the delivered quantity and the balance after delivery."
+  - "Automated tests prove the balance-protection rules remain intact."
+
+planning_explanation: |
+  Story 5.1 was planned as the point where the membership ledger becomes
+  operational on the consumption side. Earlier stories made it possible to sell
+  packages and track prepaid cups. This story is the first one that spends that
+  credit in the actual owner workflow. Without it, the app would accumulate
+  balances but never use them in a realistic service operation.
+
+  The plan needed to be explicit about multi-cup delivery. A one-cup-only
+  workflow would technically work, but it would be the wrong business fit for a
+  coffee shop. The owner often needs to redeem several cups during one visit,
+  so the story must accept a positive whole-number quantity and treat that as a
+  single delivery event. That design choice reduces repetitive data entry and
+  keeps the ledger aligned with how the business actually operates.
+
+  The central technical risk is ledger integrity. Delivery is not a simple UI
+  form; it changes the current balance and writes history at the same time. The
+  plan therefore requires a transactional model that updates the balance and
+  inserts the delivery record together. That avoids drift between the live
+  balance and the recorded history. The plan also requires explicit blocking for
+  zero-balance and over-balance attempts because those are the two ways the
+  ledger can be corrupted most easily.
+
+  The architecture remains straightforward. Delivery logic lives in a model
+  layer, the admin route exposes the owner workflow, and the customer detail
+  page becomes the operational entry point. The UI is intentionally compact: the
+  owner needs a quantity input and a delivery history section, not a new
+  subsystem. That keeps the story consistent with the rest of the MVP and makes
+  the risk surface easier to test.
+
+  The test plan focuses on the business rules that protect the ledger. The most
+  important assertions are that a positive multi-cup delivery subtracts the
+  correct quantity, that zero-balance and over-balance deliveries are rejected,
+  and that the history records preserve the resulting balance. Those tests are
+  the guardrails that keep the prepaid membership data trustworthy.

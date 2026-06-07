@@ -1,0 +1,179 @@
+phase: "Phase 1: Owner MVP"
+epic: "Epic 3: Customer Management"
+story:
+  id: "3.2"
+  title: "Add Customer Search, Detail, And Validation Coverage"
+output_type: "sprint-status.yaml"
+workflow_step: "Amelia: sprint-planning"
+status_snapshot: "Planned before development"
+final_delivery_status: "Implemented / Delivered"
+
+sprint_goal: >
+  Harden the owner-facing customer ledger by making search reliable, the
+  customer detail page trustworthy, and the customer record validation rules
+  explicit and testable for day-to-day shop use.
+
+story_scope:
+  in_scope:
+    - "Support search by customer name, phone, and login identifier."
+    - "Preserve and validate the customer detail page as the owner’s account snapshot."
+    - "Enforce duplicate prevention for phone numbers and login identifiers."
+    - "Enforce required fields for customer creation."
+    - "Return clear business-facing validation messages."
+    - "Add automated coverage for search, detail, and validation behavior."
+  out_of_scope:
+    - "Customer portal login."
+    - "Public customer pages."
+    - "Package purchase creation."
+    - "Delivery recording or voiding."
+    - "Dashboard metrics or reporting."
+    - "Advanced CRM features such as tags, segments, or notes."
+
+deliverables:
+  - "Search-capable customer list behavior in the admin portal."
+  - "Stable customer detail page behavior for existing customers."
+  - "Duplicate and required-field validation logic at the model boundary."
+  - "Owner-facing validation messaging for invalid customer input."
+  - "Automated tests that prove the customer ledger remains usable and correct."
+
+risks:
+  - id: "R1"
+    description: "Search results are inconsistent or do not match the owner’s lookup habits."
+    impact: >
+      The owner will waste time finding the right customer during service, which
+      makes the admin portal less useful in a live shop environment.
+    mitigation: >
+      Search by the three most common identity fields: name, phone, and login identifier.
+  - id: "R2"
+    description: "Validation is only enforced in the UI and not at the model boundary."
+    impact: >
+      Invalid or duplicate customer records could still reach the database and
+      undermine ledger accuracy.
+    mitigation: >
+      Enforce required fields and duplicate checks in the model logic before insert.
+  - id: "R3"
+    description: "The customer detail page fails to provide enough operational context."
+    impact: >
+      The owner cannot confidently use the customer record as the basis for
+      later balance and transaction workflows.
+    mitigation: >
+      Keep the detail page centered on identity and current balance.
+  - id: "R4"
+    description: "Coverage is too shallow to prevent regressions in search or validation behavior."
+    impact: >
+      Future changes could accidentally weaken customer record reliability.
+    mitigation: >
+      Add automated tests for search, duplicates, required fields, and protected access.
+
+dependencies:
+  prerequisite_stories:
+    - "Story 1.1: Build Local Express And SQLite Foundation"
+    - "Story 1.2: Establish Configuration, Data Access, And Test Foundation"
+    - "Story 2.1: Implement Owner Authentication And Route Protection"
+    - "Story 3.1: Implement Customer Account Management"
+  technical_dependencies:
+    - "models/customer-account.js search and lookup functions"
+    - "owner-authenticated admin routes"
+    - "SQLite customer schema with identity and balance fields"
+    - "existing customer detail route and list route"
+  downstream_dependencies:
+    - "Package purchase stories that need correct customer selection"
+    - "Delivery stories that rely on trustworthy customer identity"
+    - "Customer portal and shared access features that depend on accurate accounts"
+
+planned_files:
+  create:
+    - "tests/phase1-owner.test.js customer-search/detail assertions"
+  modify:
+    - "models/customer-account.js"
+    - "routes/admin.js"
+    - "tests/phase1-owner.test.js"
+    - "tests/e2e-owner-customer-flow.test.js"
+
+planned_routes:
+  new_routes: []
+  affected_routes:
+    - "GET /admin/customers"
+    - "GET /admin/customers/new"
+    - "POST /admin/customers"
+    - "GET /admin/customers/:customerId"
+  route_behavior_plan:
+    - "Allow owner search via query parameter on the customer list page."
+    - "Keep the customer detail page stable and owner-only."
+    - "Return the owner to the create form with validation errors when customer input is invalid."
+
+planned_database_changes:
+  schema_changes: []
+  data_changes:
+    - "No permanent data migration is expected."
+  behavior_changes:
+    - "Customer validation happens before insert."
+    - "Search reads from existing customer records and related delivery data for display context."
+  explanation: >
+    The schema already supports customer identity and balance data. This story
+    hardens how that data is queried and validated rather than changing the
+    database shape.
+
+planned_tests:
+  automated:
+    - name: "Customer search returns expected matches"
+      purpose: "Verify the owner can locate customers by the fields they actually use."
+    - name: "Customer detail page renders for an existing customer"
+      purpose: "Verify the operational account snapshot remains available."
+    - name: "Duplicate phone numbers are rejected"
+      purpose: "Verify identity integrity."
+    - name: "Duplicate login identifiers are rejected"
+      purpose: "Verify customer identity uniqueness."
+    - name: "Required fields are enforced"
+      purpose: "Verify ledger entries cannot be incomplete."
+    - name: "Customer-management routes remain protected"
+      purpose: "Verify the customer ledger stays owner-only."
+  manual:
+    - "Search for a customer using name, phone, and login identifier."
+    - "Open a customer detail page and confirm the identity and balance context."
+  not_required:
+    - "Customer portal testing."
+    - "Package purchase testing."
+    - "Delivery testing."
+
+completion_criteria:
+  - "The owner can reliably find customer records from the customer list."
+  - "The customer detail page is a stable operational source of truth."
+  - "Invalid customer creation input is rejected before database insert."
+  - "Duplicate phone and login identifier values are blocked consistently."
+  - "Automated tests prove the customer-management behavior is safe to build on."
+
+planning_explanation: |
+  Story 3.2 was planned as the quality and reliability layer for customer
+  management, not as a new customer-management feature. After Story 3.1 created
+  the ledger record itself, this story needed to make sure the owner could use
+  that ledger confidently in daily operations. Search, detail visibility, and
+  validation are what make the record trustworthy at shop speed.
+
+  The plan is intentionally narrow. It does not expand customer management into
+  a CRM or into customer self-service. Instead, it focuses on the behaviors that
+  keep the owner’s records correct and easy to use: finding the right customer,
+  confirming the right customer, and preventing bad customer input from entering
+  the system. That is the right scope for the MVP because customer records are
+  the source of truth for later package and delivery work.
+
+  The biggest planning concern was identity integrity. If search is weak or
+  duplicates are allowed, the whole prepaid ledger becomes difficult to trust.
+  The plan therefore assumes duplicate prevention stays in the model layer and
+  that search is based on the real identity fields the owner will use during
+  normal shop activity. Another concern was validation placement: if validation
+  only exists in the form markup, the data layer would still be vulnerable to
+  bad input. The sprint plan addresses that by making validation a business rule
+  rather than just a UI convenience.
+
+  The architecture remains simple. Existing routes and the customer-account
+  model are extended rather than replaced. SQLite remains the source of truth,
+  and the tests prove behavior against the same data model the application uses
+  in production. That makes the story low-maintenance and consistent with the
+  rest of the MVP.
+
+  The testing plan is centered on confidence: customer search should find the
+  right record, customer detail should always render for existing customers, and
+  duplicate or incomplete customer creation should fail before write. Those are
+  the behaviors that matter most for a single-shop owner using the system as an
+  operational ledger.

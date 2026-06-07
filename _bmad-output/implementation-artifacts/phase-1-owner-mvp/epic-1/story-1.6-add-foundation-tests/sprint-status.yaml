@@ -1,0 +1,195 @@
+phase: "Phase 1: Owner MVP"
+epic: "Epic 1: Application Foundation"
+story:
+  id: "1.6"
+  title: "Add Foundation Tests"
+output_type: "sprint-status.yaml"
+workflow_step: "Amelia: sprint-planning"
+status_snapshot: "Planned before development"
+final_delivery_status: "Implemented / Delivered"
+
+sprint_goal: >
+  Establish the first executable automated quality gate for the Owner MVP by
+  validating the foundational package credit calculation through the standard
+  project test command. The sprint goal is to ensure the prepaid cup ledger's
+  first business-critical rule is verified before broader owner workflows
+  depend on it.
+
+story_scope:
+  in_scope:
+    - "Create direct automated tests for the package credit model."
+    - "Use the project-standard Node.js test runner."
+    - "Verify the 10-cup package credits 11 total cups."
+    - "Verify the 20-cup package credits 22 total cups."
+    - "Verify the 30-cup package credits 33 total cups."
+    - "Verify invalid package sizes are rejected."
+    - "Ensure tests run through npm test."
+    - "Keep tests independent of routes, sessions, views, and database setup."
+  out_of_scope:
+    - "Admin authentication tests."
+    - "Customer management tests."
+    - "Package purchase route or database transaction tests."
+    - "Delivery workflow tests."
+    - "Dashboard metric tests."
+    - "Customer portal tests."
+    - "QR/share link tests."
+    - "Browser or UI automation."
+
+deliverables:
+  - "tests/customer-balance.test.js"
+  - "package.json test script using node --test"
+  - "Direct assertions for supported package credit outcomes"
+  - "Direct assertion for invalid package size rejection"
+  - "A reusable testing baseline for later application stories"
+
+risks:
+  - id: "R1"
+    description: "Tests are written against stale business rules."
+    impact: >
+      The automated suite could pass while validating incorrect package credit
+      behavior, especially for the 30-cup package.
+    mitigation: >
+      Use the delivered source-of-truth rule set: 10 -> 11, 20 -> 22, and
+      30 -> 33.
+  - id: "R2"
+    description: "Foundation tests are coupled to database setup or Express startup."
+    impact: >
+      The tests become slower, more brittle, and less useful as a fast
+      feedback mechanism during development.
+    mitigation: >
+      Test the pure model function directly using node:test and
+      node:assert/strict.
+  - id: "R3"
+    description: "There is no standard test entry point for the project."
+    impact: >
+      Later stories may introduce fragmented testing practices or avoid
+      automated testing altogether.
+    mitigation: >
+      Standardize execution through package.json with npm test mapped to
+      node --test.
+  - id: "R4"
+    description: "Assertions are too shallow."
+    impact: >
+      Tests might miss regressions in the returned object contract that later
+      workflows depend on.
+    mitigation: >
+      Assert the full returned object for each supported package size, not only
+      the total credited cup count.
+
+dependencies:
+  prerequisite_stories:
+    - "Story 1.1: Express And SQLite Application Foundation"
+    - "Story 1.5: Implement Package Credit Calculation"
+  technical_dependencies:
+    - "Node.js built-in test runner"
+    - "node:assert/strict"
+    - "CommonJS module imports"
+    - "package.json script configuration"
+  source_modules_under_test:
+    - "models/cup-balance.js"
+  downstream_dependencies:
+    - "Later owner workflow tests"
+    - "Later customer portal tests"
+    - "Later route and integration tests"
+    - "Confidence in package purchase and balance update behavior"
+
+planned_files:
+  create:
+    - "tests/customer-balance.test.js"
+  modify:
+    - "package.json"
+  no_change_expected:
+    - "database/schema.sql"
+    - "database/database.js"
+    - "routes/admin.js"
+    - "routes/customer.js"
+    - "views/"
+    - "public/"
+    - "SQLite data files"
+
+planned_routes:
+  new_routes: []
+  affected_routes: []
+  explanation: >
+    Story 1.6 is a foundation testing story. It should not introduce or modify
+    any HTTP route behavior because the target of the story is model-level
+    package credit logic.
+
+planned_database_changes:
+  schema_changes: []
+  data_changes: []
+  connection_changes: []
+  explanation: >
+    No database changes are planned. The tests are intentionally designed to
+    verify pure business logic without requiring SQLite setup, migrations,
+    seeded records, or transaction handling.
+
+planned_tests:
+  automated:
+    - name: "10 cup package credits 11 total cups"
+      purpose: "Verify the smallest package bonus rule."
+    - name: "20 cup package credits 22 total cups"
+      purpose: "Verify the mid-tier package bonus rule."
+    - name: "30 cup package credits 33 total cups"
+      purpose: "Verify the largest package bonus rule in its delivered form."
+    - name: "Invalid package size is rejected"
+      purpose: "Verify unsupported package sizes do not silently pass."
+  manual:
+    - "Run npm test locally to confirm the project recognizes and executes the tests."
+  not_required:
+    - "Browser validation"
+    - "Database fixture setup"
+    - "Session or authentication setup"
+    - "Supertest route coverage for this story"
+
+completion_criteria:
+  - "tests/customer-balance.test.js exists."
+  - "The test file imports calculatePackageCredits from the model layer."
+  - "Supported package sizes are validated against the delivered business rules."
+  - "Invalid package sizes are explicitly rejected in test coverage."
+  - "npm test executes the foundation tests successfully."
+  - "The tests remain deterministic and do not require SQLite or Express startup."
+  - "The testing approach is simple enough to extend in later stories."
+
+planning_explanation: |
+  Story 1.6 was planned as the first formal quality checkpoint in the product.
+  The Owner MVP is not just a CRUD application. It is a prepaid cup ledger.
+  That means foundation logic needs protection early, because later owner and
+  customer workflows will rely on the same underlying balance rules. The first
+  rule that deserved automated protection was package credit calculation.
+
+  The sprint objective before development would have been intentionally narrow.
+  The goal was not to create a broad automated suite in one step. The goal was
+  to prove that the project could execute a standard test command and that the
+  most important early business rule could be validated automatically without
+  database or route complexity.
+
+  The implementation plan would therefore focus on a direct model test rather
+  than integration or UI testing. This was the correct planning choice because
+  calculatePackageCredits is pure business logic. It does not need Express, a
+  browser, sessions, seeded users, or a SQLite database file. Testing the model
+  directly keeps the feedback loop fast and makes failures easy to interpret.
+
+  The planned file impact was deliberately small. A new test file would be
+  created under tests/, and package.json would expose the standard test command.
+  No route files, view templates, database scripts, or public assets would be
+  touched. This kept the story tightly scoped and prevented a foundation test
+  story from accidentally drifting into broader product behavior.
+
+  Risks before development were also straightforward. The most important risk
+  was that the tests might lock in stale business assumptions, especially around
+  the largest package. The delivered application confirms that the correct
+  expectation is 30 purchased cups crediting 33 total cups. Planning therefore
+  needed to make that rule explicit so the automated tests would reinforce the
+  final business policy rather than an earlier draft assumption.
+
+  Another planning concern was maintaining the right level of abstraction.
+  Foundation tests should not require unnecessary infrastructure. If the tests
+  were coupled to database setup or server startup, they would become too heavy
+  for the role they were meant to play. The sprint plan therefore assumes pure
+  function testing through node:test and node:assert/strict.
+
+  In practical delivery terms, this story would be considered complete when the
+  project could run npm test successfully, the package credit rules were covered
+  directly, invalid package size handling was verified, and later stories had a
+  clear example of how to extend automated coverage in the same codebase.

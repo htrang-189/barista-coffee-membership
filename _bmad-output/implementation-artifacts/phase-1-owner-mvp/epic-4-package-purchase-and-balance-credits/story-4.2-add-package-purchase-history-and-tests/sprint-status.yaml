@@ -1,0 +1,188 @@
+phase: "Phase 1: Owner MVP"
+epic: "Epic 4: Package Purchase And Balance Credits"
+story:
+  id: "4.2"
+  title: "Add Package Purchase History And Tests"
+output_type: "sprint-status.yaml"
+workflow_step: "Amelia: sprint-planning"
+status_snapshot: "Planned before development"
+final_delivery_status: "Implemented / Delivered"
+
+sprint_goal: >
+  Make package purchases easy to verify by surfacing recent purchase history in
+  owner and customer views, exposing full history through View All pages, and
+  protecting the package ledger with tests that prove the pricing, bonus, and
+  balance behavior remains correct.
+
+story_scope:
+  in_scope:
+    - "Show package purchase history on the owner customer detail page."
+    - "Show package purchase history in customer-facing read-only views."
+    - "Use newest-first ordering for purchase history."
+    - "Limit recent history in summary views and provide View All paths."
+    - "Keep the purchase history read-only for customers."
+    - "Add tests that verify package purchase behavior, preview behavior, and history rendering."
+  out_of_scope:
+    - "Changing fixed pricing."
+    - "Changing bonus rules."
+    - "Manual payment entry."
+    - "Customer-initiated edits to purchase history."
+    - "Delivery history changes."
+    - "Dashboard redesign."
+
+deliverables:
+  - "Owner customer detail page with package purchase history."
+  - "Customer portal purchase history section."
+  - "Shared balance-link purchase history section."
+  - "View All pages for full purchase history where needed."
+  - "Automated tests covering purchase history, preview output, and ledger correctness."
+
+risks:
+  - id: "R1"
+    description: "Purchase history is not visible where the owner expects it."
+    impact: >
+      The owner cannot confirm that a package purchase was recorded correctly.
+    mitigation: >
+      Render purchase history on the customer detail page directly below the purchase form.
+  - id: "R2"
+    description: "Customer-facing history reveals admin-only information."
+    impact: >
+      The customer portal may expose data that should remain internal.
+    mitigation: >
+      Keep customer views read-only and limit the displayed purchase fields to the ledger record.
+  - id: "R3"
+    description: "Summary views become too long and hard to scan."
+    impact: >
+      The portal becomes cluttered as purchases accumulate.
+    mitigation: >
+      Show only recent records by default and provide a View All link.
+  - id: "R4"
+    description: "Tests cover purchase creation but not history or preview output."
+    impact: >
+      History rendering regressions could slip through unnoticed.
+    mitigation: >
+      Add tests for the history views, summary limits, and preview output.
+
+dependencies:
+  prerequisite_stories:
+    - "Story 1.1: Build Local Express And SQLite Foundation"
+    - "Story 1.2: Establish Configuration, Data Access, And Test Foundation"
+    - "Story 2.1: Implement Owner Authentication And Route Protection"
+    - "Story 3.1: Implement Customer Account Management"
+    - "Story 3.2: Add Customer Search, Detail, And Validation Coverage"
+    - "Story 4.1: Implement Package Purchase, Fixed Pricing, And Bonus Crediting"
+  technical_dependencies:
+    - "models/package-purchase.js"
+    - "listPackagePurchasesForCustomer(...)"
+    - "customer detail and balance views"
+    - "customer portal route rendering"
+    - "shared balance-link route rendering"
+  downstream_dependencies:
+    - "delivery history stories"
+    - "customer portal history refinements"
+    - "dashboard metrics based on stored package revenue"
+
+planned_files:
+  create:
+    - "tests/customer-portal.test.js history coverage extensions"
+  modify:
+    - "routes/admin.js"
+    - "routes/customer.js"
+    - "tests/phase1-owner.test.js"
+    - "tests/customer-portal.test.js"
+    - "tests/e2e-owner-customer-flow.test.js"
+
+planned_routes:
+  new_routes:
+    - "GET /admin/customers/:customerId/package-purchases"
+    - "GET /customer/balance"
+    - "GET /customer/access/:token"
+  affected_routes:
+    - "GET /admin/customers/:customerId"
+    - "GET /admin/customers/:customerId/package-purchases"
+    - "GET /customer/login"
+    - "GET /customer/balance"
+    - "GET /customer/access/:token"
+  route_behavior_plan:
+    - "Render recent package purchases in newest-first order."
+    - "Limit history in summary views and provide View All navigation."
+    - "Keep customer-facing purchase history read-only."
+    - "Prevent admin actions from appearing in customer-facing purchase history."
+
+planned_database_changes:
+  schema_changes: []
+  data_changes:
+    - "No new permanent data migration is expected."
+  behavior_changes:
+    - "Purchase history is read from the existing package_purchases table."
+    - "Summary views display only the most recent records by default."
+    - "Full history pages use the same purchase data source."
+  explanation: >
+    The data model for package purchases is already in place. This story uses
+    that ledger to present history consistently across owner and customer views
+    rather than changing the schema.
+
+planned_tests:
+  automated:
+    - name: "Package purchase history is visible on the owner detail page"
+      purpose: "Verify the owner can review recorded purchases."
+    - name: "Customer portal shows recent purchase history"
+      purpose: "Verify the customer sees read-only history."
+    - name: "Shared balance-link view shows recent purchase history"
+      purpose: "Verify the shared link reuses the same ledger history safely."
+    - name: "History summary views limit records and expose View All links"
+      purpose: "Verify the UI remains compact and navigable."
+    - name: "Purchase tests still prove fixed pricing and bonus rules"
+      purpose: "Verify the ledger remains correct after history changes."
+    - name: "Purchase history remains newest first"
+      purpose: "Verify operational readability."
+  manual:
+    - "Open the customer detail page and verify the purchase history section."
+    - "Open the customer portal and the shared balance link and verify the read-only history."
+  not_required:
+    - "Package pricing changes."
+    - "Delivery history changes."
+    - "Customer edit behavior."
+
+completion_criteria:
+  - "The owner can review package purchase history on the customer detail page."
+  - "Customer-facing views show purchase history in a read-only format."
+  - "Recent history views remain compact and include View All navigation."
+  - "Purchase history is ordered newest first."
+  - "Tests prove the purchase ledger and history display remain consistent."
+
+planning_explanation: |
+  Story 4.2 was planned as the visibility and verification layer for package
+  purchases. Story 4.1 created the fixed-price purchase ledger, but a ledger is
+  only useful if the owner and customer can inspect it later. This story
+  therefore focuses on showing the stored package data in the right places,
+  preserving a simple summary view for day-to-day use, and ensuring the same
+  records can be reused across owner and customer surfaces.
+
+  The plan intentionally avoids changing pricing or bonus logic. That part of
+  the package story is already settled. The new work is about presentation and
+  trust: the owner needs to confirm purchases in the admin portal, customers
+  need to see a read-only record of what was purchased, and the app needs to
+  remain compact enough that history does not overwhelm the UI. A recent-first
+  list with View All navigation is the right balance for a small shop with a
+  limited but growing membership base.
+
+  Another important concern is the boundary between read-only and operational
+  data. Customer-facing views should surface the same purchase history ledger,
+  but they should not expose admin controls or editing paths. That keeps the
+  customer portal trustworthy while preserving the owner’s control over the
+  ledger.
+
+  The architecture assumption remains simple. The history views are rendered
+  from the existing package-purchase table and the same model function used by
+  the owner detail page. No new persistence layer is required. This means the
+  story can be implemented as a visibility layer on top of the already-delivered
+  package purchase functionality, which is exactly what a follow-on ledger
+  story should be.
+
+  The testing plan is intentionally focused on ledger trust. The most important
+  checks are that the history appears where expected, that summary views only
+  show recent records, that full history remains accessible, and that the fixed
+  pricing and bonus rule tests continue to pass after the UI and route work.
+  Those checks make the package purchase epic safer to build on in later
+  customer-portal and reporting stories.

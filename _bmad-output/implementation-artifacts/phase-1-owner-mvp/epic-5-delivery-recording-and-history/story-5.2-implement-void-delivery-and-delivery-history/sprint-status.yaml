@@ -1,0 +1,187 @@
+phase: "Phase 1: Owner MVP"
+epic: "Epic 5: Delivery Recording And History"
+story:
+  id: "5.2"
+  title: "Implement Void Delivery And Delivery History"
+output_type: "sprint-status.yaml"
+workflow_step: "Amelia: sprint-planning"
+status_snapshot: "Planned before development"
+final_delivery_status: "Implemented / Delivered"
+
+sprint_goal: >
+  Deliver a delivery-correction workflow that lets the coffee shop owner review
+  delivery history, void mistaken delivery records, and restore customer cups
+  without breaking the prepaid ledger.
+
+story_scope:
+  in_scope:
+    - "Show delivery history for a specific customer."
+    - "Show recent delivery activity in the admin portal."
+    - "Allow the owner to void an incorrect delivery record."
+    - "Restore the delivered cups to the customer balance when voided."
+    - "Prevent the same delivery from being voided more than once."
+    - "Preserve the original delivery record after voiding."
+    - "Store who voided the delivery."
+    - "Render delivery history in newest-first order."
+  out_of_scope:
+    - "Deleting delivery rows from the database."
+    - "Editing the original delivered quantity after save."
+    - "Customer-initiated corrections."
+    - "Package purchase corrections."
+    - "Balance adjustments outside of delivery voiding."
+    - "Customer portal editing of delivery history."
+
+deliverables:
+  - "Void delivery model logic with balance restoration."
+  - "Customer-specific delivery history view in the admin portal."
+  - "Admin recent-deliveries list with correction actions."
+  - "Protection against repeat voiding."
+  - "Automated tests covering delivery voiding and history rendering."
+
+risks:
+  - id: "R1"
+    description: "A delivery mistake cannot be corrected safely."
+    impact: >
+      The owner would have to manually edit the database or leave the account
+      inaccurate, which breaks trust in the ledger.
+    mitigation: >
+      Implement a controlled void action that restores the balance and preserves history.
+  - id: "R2"
+    description: "Voiding behaves like deletion instead of correction."
+    impact: >
+      The audit trail is lost, making it impossible to review what happened later.
+    mitigation: >
+      Keep the original row, mark it voided, and store void metadata.
+  - id: "R3"
+    description: "A delivery can be voided multiple times."
+    impact: >
+      The balance could be inflated and the ledger would become inconsistent.
+    mitigation: >
+      Check void state before applying a restoration and reject repeated attempts.
+  - id: "R4"
+    description: "Delivery history is too hard to review from the admin portal."
+    impact: >
+      The correction workflow becomes slow and error-prone.
+    mitigation: >
+      Expose both customer-level history and a recent-deliveries admin list.
+  - id: "R5"
+    description: "Void operations restore balance without clear traceability."
+    impact: >
+      The shop loses accountability for who performed the correction.
+    mitigation: >
+      Record the voiding admin user and include audit logging.
+
+dependencies:
+  prerequisite_stories:
+    - "Story 1.1: Build Local Express And SQLite Foundation"
+    - "Story 1.2: Establish Configuration, Data Access, And Test Foundation"
+    - "Story 2.1: Implement Owner Authentication And Route Protection"
+    - "Story 3.1: Implement Customer Account Management"
+    - "Story 3.2: Add Customer Search, Detail, And Validation Coverage"
+    - "Story 4.1: Implement Package Purchase, Fixed Pricing, And Bonus Crediting"
+    - "Story 4.2: Add Package Purchase History And Tests"
+    - "Story 5.1: Implement Multi-Cup Delivery And Balance Protection"
+  technical_dependencies:
+    - "models/delivery-history.js"
+    - "voidDelivery(...)"
+    - "listDeliveriesForCustomer(...)"
+    - "listRecentDeliveries(...)"
+    - "delivery_history table with void metadata"
+    - "customer_accounts.current_balance"
+    - "owner-authenticated admin routes"
+  downstream_dependencies:
+    - "Delivery tests"
+    - "Customer portal delivery history"
+    - "Dashboard recent delivery activity"
+    - "Low-balance and balance-history customer views"
+
+planned_files:
+  create:
+    - "models/delivery-history.js"
+  modify:
+    - "routes/admin.js"
+    - "views/admin/customer-detail.*"
+    - "views/admin/deliveries.*"
+    - "tests/phase1-owner.test.js"
+    - "tests/e2e-owner-customer-flow.test.js"
+
+planned_routes:
+  new_routes:
+    - "POST /admin/deliveries/:deliveryId/void"
+  affected_routes:
+    - "GET /admin/customers/:customerId"
+    - "GET /admin/customers/:customerId/deliveries"
+    - "GET /admin/deliveries"
+  route_behavior_plan:
+    - "Render customer delivery history in newest-first order."
+    - "Expose a void action for active deliveries."
+    - "Restore the customer balance when a delivery is voided."
+    - "Block repeat void attempts."
+
+planned_database_changes:
+  schema_changes:
+    - "delivery_history table must support voided_at and voided_by_admin_id fields."
+  behavior_changes:
+    - "Voiding a delivery restores the corresponding cups to customer_accounts.current_balance."
+    - "The original delivery row is preserved and marked voided."
+    - "Void metadata is stored for auditability."
+  explanation: >
+    The database design must support correction without erasure. A void is not a
+    delete; it is a ledger event that changes the current balance while leaving
+    the original delivery record visible for future review.
+
+planned_tests:
+  automated:
+    - name: "Void delivery restores balance"
+      purpose: "Verify that a correction returns cups to the customer account."
+    - name: "Repeat void is rejected"
+      purpose: "Verify that the same delivery cannot be voided twice."
+    - name: "Delivery history remains newest-first"
+      purpose: "Verify that the history view orders the latest event first."
+    - name: "Admin deliveries list renders correction actions"
+      purpose: "Verify that the correction workflow is exposed in the admin portal."
+  manual:
+    - "Open a customer detail page and confirm the delivery history is visible."
+    - "Void a delivery and confirm the balance increases by the delivered amount."
+  not_required:
+    - "Customer-initiated voiding."
+    - "Editing package purchase history."
+    - "Deleting delivery records permanently."
+
+completion_criteria:
+  - "The owner can review delivery history from the admin portal."
+  - "The owner can void a mistaken delivery safely."
+  - "The customer balance is restored correctly after voiding."
+  - "Voided deliveries remain in history with void metadata."
+  - "Automated tests prove the correction workflow does not corrupt the ledger."
+
+planning_explanation: |
+  Story 5.2 was planned as the correction half of the delivery ledger. Story
+  5.1 made it possible to subtract cups safely. This story makes it possible to
+  correct mistakes safely. That distinction matters because a ledger that can
+  only subtract but cannot correct is too fragile for real shop use.
+
+  The implementation needs to preserve the original delivery event rather than
+  deleting it. Deletion would hide the mistake, remove auditability, and make
+  future reporting less reliable. A void, by contrast, can restore the balance
+  while keeping the original event visible and traceable. That is the right
+  business and technical interpretation for a prepaid membership system.
+
+  The main technical risk is double-restoration. If a voided delivery can be
+  voided again, the customer balance would inflate incorrectly. The plan must
+  therefore explicitly check void state and reject repeated attempts. A second
+  risk is that delivery history might be hard to find in the admin portal. The
+  plan addresses that by exposing both customer-level history and a global
+  recent-deliveries view, which gives the owner enough context to correct
+  mistakes quickly.
+
+  The architecture remains consistent with the rest of the application. The
+  delivery correction logic lives in the model layer, while the admin routes
+  handle owner interaction and rendering. That keeps the codebase predictable
+  and makes the ledger rules testable in isolation.
+
+  The test strategy focuses on the business rules that matter most: voiding must
+  restore cups, a delivery must not be voided twice, and the ledger must remain
+  visible after correction. Those tests are essential because voiding is a high
+  risk action that changes balances. The UI is secondary; the integrity of the
+  ledger is primary.

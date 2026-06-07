@@ -1,0 +1,130 @@
+phase: "Phase 1: Owner MVP"
+epic: "Epic 2: Owner Authentication"
+story_id: "Story 2.2"
+story_title: "Add Owner Authentication Security Tests"
+workflow_step: "Amelia: sprint-planning"
+artifact_type: "sprint-status.yaml"
+status: "Planned Retrospectively"
+
+sprint_goal: >
+  Establish a focused automated security regression suite for owner authentication
+  so the coffee shop owner’s protected workflows remain reliable, unauthorized
+  access regressions are detected early, and the local MVP can be maintained with
+  confidence as later features are added.
+
+story_scope:
+  in_scope:
+    - "Verify owner passwords are stored as hashes rather than plaintext."
+    - "Verify successful admin login creates an authenticated session."
+    - "Verify failed admin login returns a generic invalid-login response."
+    - "Verify protected admin routes redirect unauthenticated requests to the login page."
+    - "Verify owner logout clears the session and restores route protection."
+    - "Use the project-standard automated test command so the checks run with the rest of the suite."
+  out_of_scope:
+    - "Customer authentication tests."
+    - "Full browser end-to-end testing."
+    - "Authorization testing for customer-specific routes."
+    - "Performance testing or load testing."
+    - "CSRF-hardening validation beyond the MVP baseline."
+
+deliverables:
+  - "An automated owner authentication test file covering security-critical route and session behaviors."
+  - "A repeatable test harness that creates an isolated temporary SQLite database."
+  - "Verification that password hashing and authentication flows work against the delivered application."
+  - "Regression coverage integrated into the existing npm test workflow."
+
+risks:
+  - "Authentication behavior may regress quietly if login, logout, or middleware behavior changes without test coverage."
+  - "If tests share state, false positives or intermittent failures could reduce trust in the suite."
+  - "If failure-path messaging is not tested, implementation changes could leak unnecessary credential detail."
+  - "If route-protection boundaries are not explicitly tested, later feature work could accidentally expose admin pages."
+
+dependencies:
+  - "Story 2.1: Implement Owner Authentication And Route Protection."
+  - "Express application factory capable of running against an injected database."
+  - "SQLite schema script for creating admin tables in an isolated test database."
+  - "Password hashing helper and admin-user model functions."
+  - "Node built-in test runner and Supertest-based route testing."
+
+planned_files:
+  create:
+    - "tests/admin-auth.test.js"
+  modify:
+    - "package.json"
+
+planned_routes:
+  added: []
+  exercised:
+    - "GET /admin/login"
+    - "POST /admin/login"
+    - "POST /admin/logout"
+    - "GET /admin/dashboard"
+    - "GET /admin/customers"
+
+planned_database_changes:
+  schema_changes: []
+  test_data_only:
+    - "Create an isolated temporary SQLite database for each test run."
+    - "Apply the current schema before executing route tests."
+    - "Seed a test admin user with a hashed password."
+
+planned_tests:
+  - "Owner password is stored as a bcrypt hash and not as plaintext."
+  - "Owner can log in successfully with valid credentials."
+  - "Owner receives a generic invalid-login response with incorrect credentials."
+  - "Unauthenticated requests to protected admin routes are redirected to /admin/login."
+  - "Owner logout clears the session and protected routes are blocked afterward."
+
+completion_criteria:
+  - "Owner authentication risks identified in the MVP are covered by automated tests."
+  - "Tests run through the standard npm test command."
+  - "The test suite is isolated from the local development database."
+  - "The delivered tests validate both positive and negative authentication paths."
+  - "The suite provides enough confidence for later customer and dashboard work to proceed safely."
+
+planning_explanation: |
+  This story would have been planned immediately after the owner authentication capability was introduced,
+  once the application had a working login form, session-based route protection, and a password hashing
+  mechanism. At that point, the business risk shifted from "can the owner authenticate?" to "can the
+  owner continue to authenticate safely as the codebase grows?" The purpose of the sprint plan is therefore
+  not to add new user-facing functionality, but to protect the owner’s ability to access the system reliably
+  and prevent regressions that would undermine the MVP’s operational value.
+
+  The planned implementation approach is intentionally narrow and high-value. Rather than spreading effort
+  across broad test coverage, the sprint concentrates on the authentication boundary itself: password
+  handling, successful login, failed login, route protection, and logout/session invalidation. These are
+  the smallest set of automated checks that protect the owner portal from the most damaging regressions.
+  If any of these behaviors break, the owner cannot operate the membership program safely, regardless of
+  whether customer management, purchases, or deliveries are working correctly.
+
+  The plan assumes an isolated test harness rather than using the local development database. That matters
+  for two reasons. First, security and authentication tests must be deterministic; they cannot depend on
+  whatever data happens to exist on a developer machine. Second, the project is intentionally optimized for
+  simple local setup, so the test design needs to preserve that principle. A temporary SQLite database
+  created during test execution gives the team a clean environment without introducing external
+  infrastructure or complex setup steps.
+
+  From an implementation standpoint, the expected test file exercises the delivered Express application
+  through HTTP requests, not through internal helper calls alone. That is important because the business
+  behavior being protected lives at the route and session boundary. The owner experiences authentication
+  through forms, redirects, cookies, and protected pages. Testing at that boundary validates the actual
+  workflow rather than merely checking that individual functions return expected values in isolation.
+
+  The only expected file modification outside the test file is package-level test configuration, and even
+  that remains minimal. The project’s delivered state uses the built-in Node test runner via npm test,
+  which keeps the toolchain simple and aligned with the low-maintenance MVP approach. No route creation,
+  schema migration, or UI redesign is expected from this story. The value comes from verification, not
+  from expanding the feature surface.
+
+  The risk profile for the story is modest but meaningful. The biggest concern is false confidence: tests
+  that exist but do not truly protect the route boundary or session lifecycle. The plan mitigates this by
+  explicitly covering both positive and negative flows and by verifying what happens after logout, not just
+  during login. Another concern is state leakage between tests, which is addressed by recreating the
+  database state for the suite rather than relying on a long-lived file. Finally, there is a subtle
+  security requirement around error messaging: the login failure path should remain generic, so the plan
+  calls out response behavior directly.
+
+  In sprint terms, this is a short, focused hardening story. It does not expand scope, but it materially
+  improves delivery confidence for every Phase 1 capability that depends on owner authentication. Once this
+  story is complete, subsequent work on customer records, package purchases, deliveries, and dashboards can
+  proceed with a stronger safety net around the most sensitive access-control boundary in the MVP.

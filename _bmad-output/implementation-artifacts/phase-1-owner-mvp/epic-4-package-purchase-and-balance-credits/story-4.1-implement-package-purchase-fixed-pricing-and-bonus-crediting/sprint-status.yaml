@@ -1,0 +1,24 @@
+Create the BMAD create-story output.
+
+Phase 1: Owner MVP
+Epic 4: package purchase and balance credits
+Story 4.1
+Output type:
+story-[slug].md
+
+Task:
+Reconstruct the original implementation story document.
+
+Include:
+
+- Story title
+- Business context
+- User story
+- Acceptance criteria
+- Functional requirements
+- Non-functional requirements
+- UI requirements
+- Database requirements
+- Technical notes
+- Testing requirements
+- Definition of Done

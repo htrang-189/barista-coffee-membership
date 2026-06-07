@@ -1,0 +1,103 @@
+story:
+  phase: "Phase 2: Customer Portal"
+  epic: "Epic 1: Customer Access & Authentication"
+  key: "1.3"
+  title: "Customer Session Management"
+  output_type: "sprint-status.yaml"
+
+sprint_goal: >-
+  Establish a durable customer session lifecycle so authenticated customers can
+  remain signed in across portal navigation, access protected customer-only
+  routes, and cleanly log out without affecting owner access boundaries.
+
+story_scope:
+  included:
+    - "Create and persist customer-authenticated session state after successful login"
+    - "Allow customer portal routes to recognize an active customer session"
+    - "Protect customer-only routes from unauthenticated or wrong-role access"
+    - "Support logout that fully terminates the customer session"
+    - "Keep customer and owner session behavior separate"
+  excluded:
+    - "Password reset flows"
+    - "Multi-factor authentication"
+    - "Persistent device trust / remember-me"
+    - "Cross-device session synchronization"
+    - "Administrative user session changes"
+
+deliverables:
+  - "Customer session creation and persistence during authentication"
+  - "Session-aware route protection for portal navigation"
+  - "Logout flow that destroys the active customer session"
+  - "UI redirect behavior for unauthorized access"
+  - "Tests covering login, logout, and protected-route behavior"
+
+risks:
+  - "Session state could be implemented too generically and leak owner/customer boundaries"
+  - "Unauthorized access redirects could be inconsistent across routes"
+  - "Logout may clear the UI state but leave the server session intact if not designed carefully"
+  - "Tests may validate the happy path but not invalid-session behavior"
+
+dependencies:
+  - "Customer account records and password verification logic"
+  - "Existing Express session support and middleware layer"
+  - "Customer login entry point from Story 1.2"
+  - "Protected customer route structure in the portal"
+
+planned_files:
+  - "routes/customer.js"
+  - "middleware/auth.js"
+  - "models/customer-account.js"
+  - "views/shared/customer-login.html"
+  - "views/customer/*.html"
+  - "tests/customer-portal.test.js"
+
+planned_routes:
+  - "GET /customer/login"
+  - "POST /customer/login"
+  - "POST /customer/logout"
+  - "GET /customer/balance"
+  - "GET /customer/history"
+  - "GET /customer/notifications"
+
+planned_database_changes:
+  - "No new persistent session table required"
+  - "Reuse customer account identity and password hash records as the session source of truth"
+  - "Use server-side session storage or existing session configuration to hold the authenticated customer identifier"
+
+planned_tests:
+  - "Valid customer login establishes session and redirects to the balance page"
+  - "Invalid credentials are rejected without exposing account existence"
+  - "Customer-only routes reject unauthenticated requests"
+  - "Customer-only routes reject owner-authenticated or wrong-role requests"
+  - "Logout destroys session state and returns the user to the login flow"
+  - "Protected routes remain inaccessible after session termination"
+
+planning_explanation: >-
+  This story is planned as the portal's session boundary, not just a login form.
+  The implementation must bridge credential verification, session creation,
+  protected route access, and logout invalidation as one coherent capability.
+  The customer portal depends on a stable authenticated state because the rest of
+  the customer experience is not meaningful unless the application can reliably
+  remember who is signed in.
+
+  The plan intentionally keeps this scope narrow. It does not attempt to solve
+  password recovery, advanced session persistence policies, or trust-on-device
+  behavior. Those concerns are valid but they are separate product decisions and
+  would add complexity to a story that already needs to establish the core
+  security boundary.
+
+  From an implementation standpoint, the important design choice is to keep
+  customer session management separate from owner access logic. That separation
+  reduces the risk of leaking privileged behavior between the two user types and
+  makes the portal easier to reason about in later stories such as balance
+  display, history review, and notifications. The planned tests focus on the
+  behavior that actually matters to the business: a legitimate customer can sign
+  in, continue using the portal, and sign out cleanly, while unauthorized access
+  is blocked consistently.
+
+completion_criteria:
+  - "Customer session persists across portal navigation after successful login"
+  - "Protected routes are inaccessible without an active customer session"
+  - "Logout fully terminates access"
+  - "Tests verify positive and negative access-control paths"
+  - "The story can be delivered without adding a new persistent session table"

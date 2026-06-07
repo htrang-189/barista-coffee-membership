@@ -1,0 +1,180 @@
+phase: "Phase 2: Customer Portal"
+epic: "Epic 1: Customer Access & Authentication"
+story:
+  id: "1.1"
+  title: "Secure Customer Access Links"
+output_type: "sprint-status.yaml"
+workflow_step: "Amelia: sprint-planning"
+status_snapshot: "Planned before development"
+final_delivery_status: "Implemented / Delivered"
+
+sprint_goal: >
+  Deliver a secure, customer-specific access link that opens a read-only
+  membership balance page and prevents cross-customer data exposure while
+  supporting token regeneration and later customer portal features.
+
+story_scope:
+  in_scope:
+    - "Generate a unique customer balance access token."
+    - "Resolve the token to the correct customer-specific balance page."
+    - "Keep the customer-facing page read-only."
+    - "Hide payment amounts and admin controls."
+    - "Invalidate previous links when a token is regenerated."
+    - "Prevent one customer from accessing another customer’s data."
+    - "Keep the link usable across browser sessions."
+  out_of_scope:
+    - "Customer login/logout behavior."
+    - "Customer portal history and notifications."
+    - "Admin portal redesign."
+    - "Payment processing or payment display to customers."
+    - "QR visual generation details beyond link access support."
+
+deliverables:
+  - "Customer access token generation and rotation behavior."
+  - "Read-only customer balance page route."
+  - "Customer isolation and secure token lookup."
+  - "Hidden payment/admin data in the customer-facing view."
+  - "Automated tests proving token revocation and access protection."
+
+risks:
+  - id: "R1"
+    description: "Access tokens are predictable or reused."
+    impact: >
+      A customer might be able to guess or reuse another customer’s link.
+    mitigation: >
+      Generate a unique token bound to one customer record and validate it server-side.
+  - id: "R2"
+    description: "Old links continue working after regeneration."
+    impact: >
+      Revocation would fail and shared access could not be controlled.
+    mitigation: >
+      Invalidate the previous token immediately when a new one is issued.
+  - id: "R3"
+    description: "The customer page exposes admin or payment information."
+    impact: >
+      Sensitive operational data could leak through the link.
+    mitigation: >
+      Render a read-only customer view and explicitly hide admin/payment fields.
+  - id: "R4"
+    description: "A customer can access another customer’s balance."
+    impact: >
+      The portal would leak private account information.
+    mitigation: >
+      Resolve the route only from the stored token and matching customer record.
+  - id: "R5"
+    description: "The link works in one browser but not in normal usage."
+    impact: >
+      The owner cannot rely on the link in daily operations.
+    mitigation: >
+      Test token access across sessions and route reloads.
+
+dependencies:
+  prerequisite_stories:
+    - "Phase 1 owner MVP foundation stories that provide customer records and auth controls"
+    - "Customer account storage with a stable identifier"
+    - "Balance data already tracked in the ledger"
+    - "Existing server-rendered application framework"
+  technical_dependencies:
+    - "customer access token storage"
+    - "customer balance page rendering"
+    - "token generation and rotation logic"
+    - "route isolation between admin and customer areas"
+  downstream_dependencies:
+    - "Customer login/logout story"
+    - "Customer portal balance page"
+    - "Customer notifications and history stories"
+    - "QR/share balance link behavior"
+
+planned_files:
+  create: []
+  modify:
+    - "models/customer-account.js"
+    - "routes/customer.js"
+    - "routes/admin.js"
+    - "views/customer/balance.*"
+    - "tests/customer-portal.test.js"
+    - "tests/e2e-owner-customer-flow.test.js"
+
+planned_routes:
+  new_routes:
+    - "GET /customer/access/:token"
+  affected_routes:
+    - "GET /customer/balance"
+    - "POST /admin/customers/:customerId/balance-link/regenerate"
+    - "GET /admin/customers/:customerId"
+  route_behavior_plan:
+    - "Resolve the token to a single customer balance page."
+    - "Render the page as read-only with hidden payment/admin fields."
+    - "Reject access if the token no longer matches the customer."
+    - "Support token regeneration from the admin workflow."
+
+planned_database_changes:
+  schema_changes:
+    - "customer_accounts table must support a unique access token or equivalent token rotation field."
+  behavior_changes:
+    - "Token regeneration invalidates the previous access link."
+    - "The customer balance route resolves only the matching customer record."
+    - "The database remains the source of truth for access token state."
+  explanation: >
+    The database must support customer-specific link state so that the access
+    token can be regenerated and revoked safely. The customer-facing page depends
+    on a reliable binding between token and customer record.
+
+planned_tests:
+  automated:
+    - name: "Access token resolves to the correct customer"
+      purpose: "Verify that a valid token opens the right balance page."
+    - name: "Token regeneration invalidates previous link"
+      purpose: "Verify revocation behavior works as intended."
+    - name: "Customer page is read-only"
+      purpose: "Verify that admin actions and payment data are hidden."
+    - name: "Cross-customer access is rejected"
+      purpose: "Verify customer data isolation."
+    - name: "Access link works across sessions"
+      purpose: "Verify that the link is usable in normal browser flow."
+  manual:
+    - "Open a generated access link and confirm it shows the correct customer balance."
+    - "Regenerate the token and confirm the previous link no longer works."
+  not_required:
+    - "Customer login flow."
+    - "History and notification behavior."
+    - "Admin dashboard redesign."
+
+completion_criteria:
+  - "The shop can share a customer-specific access link safely."
+  - "The customer-facing page is read-only and does not expose sensitive data."
+  - "Regenerating the link invalidates older links."
+  - "Automated tests prove token isolation and revocation."
+
+planning_explanation: |
+  Story 1.1 was planned as the secure entry point for the customer portal. The
+  app already had the owner ledger, but the customer needed a controlled way to
+  see their membership balance without exposing admin functionality or payment
+  details. The story therefore focuses on link security first and customer
+  convenience second.
+
+  The main design decision is to treat the access link as a customer-specific
+  token that can be regenerated. That gives the owner a practical way to share
+  the balance page while also providing a revocation path if the link should no
+  longer be used. The access model needs to be precise because a shared link can
+  easily become a privacy problem if it is not bound to a single customer.
+
+  The architecture does not need a new client framework or a separate auth
+  subsystem. The existing server-rendered route model is sufficient. The work
+  instead concentrates on token storage, token lookup, route isolation, and
+  rendering the customer page as read-only. That keeps the implementation small
+  and aligned with the existing app structure.
+
+  The most important technical risk is cross-customer leakage. If the token is
+  guessable, reused, or not invalidated when regenerated, the feature becomes a
+  security bug. The plan addresses that risk by binding the token to one
+  customer record and verifying revocation through tests. Another risk is that
+  the page might accidentally expose payment amounts or admin actions. The plan
+  therefore explicitly calls out hidden financial and admin content as part of
+  the acceptance criteria.
+
+  The test strategy is centered on link security and customer isolation. The
+  tests need to prove that the correct token opens the correct page, that a
+  regenerated token invalidates the old one, and that the customer view remains
+  read-only. Those tests are the right guardrails for a secure access feature in
+  the customer portal.

@@ -1,0 +1,181 @@
+phase: "Phase 1: Owner MVP"
+epic: "Epic 5: Delivery Recording And History"
+story:
+  id: "5.3"
+  title: "Add Delivery Tests"
+output_type: "sprint-status.yaml"
+workflow_step: "Amelia: sprint-planning"
+status_snapshot: "Planned before development"
+final_delivery_status: "Implemented / Delivered"
+
+sprint_goal: >
+  Deliver automated test coverage that protects the delivery ledger from
+  regressions by verifying multi-cup delivery, invalid delivery blocking,
+  void correction behavior, delivery history ordering, and owner route
+  protection.
+
+story_scope:
+  in_scope:
+    - "Add tests for valid multi-cup delivery behavior."
+    - "Add tests for zero-balance delivery rejection."
+    - "Add tests for over-balance delivery rejection."
+    - "Add tests for voiding a delivery and restoring balance."
+    - "Add tests for rejecting repeat void attempts."
+    - "Add tests for delivery history newest-first ordering."
+    - "Add tests for admin delivery pagination."
+    - "Add tests that confirm delivery routes remain owner-protected."
+  out_of_scope:
+    - "New delivery functionality in production code."
+    - "UI redesign for delivery screens."
+    - "Changing balance rules or delivery rules."
+    - "Customer portal feature development."
+    - "Package purchase logic changes."
+
+deliverables:
+  - "Model-level tests for delivery and void behavior."
+  - "Route-level tests for delivery pagination and access control."
+  - "End-to-end workflow tests for the owner delivery ledger."
+  - "Regression coverage for balance protection and history ordering."
+
+risks:
+  - id: "R1"
+    description: "Balance-protection logic regresses without warning."
+    impact: >
+      A later code change could allow invalid delivery amounts or negative
+      ledger states.
+    mitigation: >
+      Test both the valid and invalid delivery paths explicitly.
+  - id: "R2"
+    description: "Void behavior stops restoring balances correctly."
+    impact: >
+      Mistaken deliveries would remain wrong and the ledger would lose trust.
+    mitigation: >
+      Add direct coverage for successful void and repeat-void rejection.
+  - id: "R3"
+    description: "History ordering or pagination changes unexpectedly."
+    impact: >
+      The owner could see misleading activity in review screens.
+    mitigation: >
+      Assert newest-first ordering and page navigation behavior.
+  - id: "R4"
+    description: "Delivery routes become accessible without owner authentication."
+    impact: >
+      Unauthorized users could mutate customer balances.
+    mitigation: >
+      Test that the delivery routes remain protected.
+  - id: "R5"
+    description: "Tests become brittle by overfitting to incidental markup."
+    impact: >
+      The suite fails for UI changes that do not affect business behavior.
+    mitigation: >
+      Focus assertions on ledger outcomes and key rendered semantics.
+
+dependencies:
+  prerequisite_stories:
+    - "Story 1.1: Build Local Express And SQLite Foundation"
+    - "Story 1.2: Establish Configuration, Data Access, And Test Foundation"
+    - "Story 2.1: Implement Owner Authentication And Route Protection"
+    - "Story 3.1: Implement Customer Account Management"
+    - "Story 3.2: Add Customer Search, Detail, And Validation Coverage"
+    - "Story 4.1: Implement Package Purchase, Fixed Pricing, And Bonus Crediting"
+    - "Story 4.2: Add Package Purchase History And Tests"
+    - "Story 5.1: Implement Multi-Cup Delivery And Balance Protection"
+    - "Story 5.2: Implement Void Delivery And Delivery History"
+  technical_dependencies:
+    - "models/delivery-history.js"
+    - "routes/admin.js"
+    - "tests/phase1-owner.test.js"
+    - "tests/e2e-owner-customer-flow.test.js"
+    - "SQLite schema bootstrap helpers"
+  downstream_dependencies:
+    - "Final QA regression workflow"
+    - "Future delivery and reporting stories"
+    - "Customer portal balance/history assertions"
+
+planned_files:
+  create: []
+  modify:
+    - "tests/phase1-owner.test.js"
+    - "tests/e2e-owner-customer-flow.test.js"
+    - "tests/customer-portal.test.js"
+
+planned_routes:
+  new_routes: []
+  affected_routes:
+    - "POST /admin/customers/:customerId/deliveries"
+    - "POST /admin/deliveries/:deliveryId/void"
+    - "GET /admin/deliveries"
+    - "GET /admin/customers/:customerId/deliveries"
+  route_behavior_plan:
+    - "Verify delivery POST behavior through authenticated admin sessions."
+    - "Verify void POST behavior through authenticated admin sessions."
+    - "Verify delivery pagination renders older/newer navigation correctly."
+
+planned_database_changes:
+  schema_changes: []
+  behavior_changes:
+    - "Exercise the existing delivery_history and customer_accounts data model through tests."
+    - "Validate that current_balance changes match delivery and void operations."
+  explanation: >
+    This story does not change the production schema. It validates the existing
+    balance and history model so the delivery ledger can be changed safely later
+    without altering the underlying tables.
+
+planned_tests:
+  automated:
+    - name: "Multi-cup delivery reduces balance correctly"
+      purpose: "Verify that a valid delivery subtracts the right number of cups."
+    - name: "Zero-balance delivery is rejected"
+      purpose: "Verify that delivery cannot occur when the balance is empty."
+    - name: "Over-balance delivery is rejected"
+      purpose: "Verify that the application blocks impossible quantities."
+    - name: "Void delivery restores balance"
+      purpose: "Verify the correction path returns cups to the account."
+    - name: "Repeat void is rejected"
+      purpose: "Verify that the same delivery cannot be voided twice."
+    - name: "Delivery history is newest first"
+      purpose: "Verify that the owner sees the most recent entries first."
+    - name: "Admin deliveries page paginates"
+      purpose: "Verify that the recent deliveries list is navigable."
+    - name: "Delivery routes remain protected"
+      purpose: "Verify that owner authentication is still required."
+  manual:
+    - "Run the owner delivery flow and confirm the balance changes are visible."
+    - "Void a recorded delivery and confirm the restored balance and preserved history."
+  not_required:
+    - "New production delivery features."
+    - "Customer portal redesign."
+    - "Database schema changes."
+
+completion_criteria:
+  - "The delivery ledger has automated coverage for the risky business rules."
+  - "The owner delivery workflow is protected by route tests."
+  - "The void and history behaviors are covered by regression tests."
+  - "The test suite passes against the delivered application."
+  - "The coverage is sufficient to protect the balance ledger from regressions."
+
+planning_explanation: |
+  Story 5.3 was planned as the safety net for the delivery ledger. Stories 5.1
+  and 5.2 already defined the business behavior for recording deliveries and
+  voiding mistakes. At that point, the highest-value work was to lock those
+  behaviors into automated tests so future changes could not break balance
+  integrity silently.
+
+  The plan is intentionally focused on business rules rather than page
+  decoration. The critical question is whether the ledger stays correct when a
+  delivery is valid, when it must be rejected, and when a void is applied. That
+  is why the test plan includes both success and failure paths for delivery and
+  voiding, plus order and pagination checks for the history views.
+
+  There is no production schema change in this story. That is appropriate
+  because the data model was already complete enough for the delivered delivery
+  and void logic. The sprint instead validates the existing schema and route
+  behavior through automated coverage. That keeps the risk low while giving the
+  team confidence that the ledger will remain stable.
+
+  The main technical risk is silent regression. Delivery logic can look fine in
+  a manual test while still allowing invalid quantities or breaking void
+  restoration under edge cases. The test plan addresses that by asserting the
+  outcomes that matter to the business: balance changes, rejection messages,
+  history ordering, and route protection. The result is a compact but meaningful
+  regression suite for the most sensitive part of the owner MVP.

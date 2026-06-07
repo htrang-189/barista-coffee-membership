@@ -1,0 +1,179 @@
+phase: "Phase 2: Customer Portal"
+epic: "Epic 1: Customer Access & Authentication"
+story:
+  id: "1.2"
+  title: "Customer Login Authentication"
+output_type: "sprint-status.yaml"
+workflow_step: "Amelia: sprint-planning"
+status_snapshot: "Planned before development"
+final_delivery_status: "Implemented / Delivered"
+
+sprint_goal: >
+  Deliver authenticated customer login/logout and session protection so the
+  customer portal can be accessed through a secure customer session rather than
+  only through a tokenized read-only link.
+
+story_scope:
+  in_scope:
+    - "Render a customer login form."
+    - "Authenticate customer credentials against stored password hashes."
+    - "Create a customer session on successful login."
+    - "Redirect the customer to the balance page after login."
+    - "Allow the customer to log out and clear the session."
+    - "Protect customer routes behind the customer session."
+    - "Reject expired or missing customer sessions."
+    - "Keep customer and owner sessions distinct."
+  out_of_scope:
+    - "Customer balance UI redesign."
+    - "Customer history or notification features."
+    - "Owner/admin login changes."
+    - "Password reset flows."
+    - "Multi-factor authentication."
+
+deliverables:
+  - "Customer login page and logout flow."
+  - "Customer session creation and destruction behavior."
+  - "Customer route protection middleware usage."
+  - "Post-login redirect to the customer balance page."
+  - "Automated tests for login, logout, and route protection."
+
+risks:
+  - id: "R1"
+    description: "Invalid credentials create a session."
+    impact: >
+      Unauthorized access would be possible.
+    mitigation: >
+      Verify the password hash before creating a session.
+  - id: "R2"
+    description: "Customer and owner sessions overlap."
+    impact: >
+      Users could cross access boundaries between portals.
+    mitigation: >
+      Keep customer and owner session roles distinct and enforce route protection.
+  - id: "R3"
+    description: "Expired sessions continue to work."
+    impact: >
+      Customer data could remain accessible beyond the intended session.
+    mitigation: >
+      Redirect missing or expired sessions to the customer login page.
+  - id: "R4"
+    description: "Logout does not fully clear access."
+    impact: >
+      The portal could remain accessible after the user believes they signed out.
+    mitigation: >
+      Destroy the session and clear the session cookie on logout.
+  - id: "R5"
+    description: "Login errors reveal too much detail."
+    impact: >
+      The login experience may leak unnecessary authentication clues.
+    mitigation: >
+      Return a generic invalid login message.
+
+dependencies:
+  prerequisite_stories:
+    - "Phase 1 owner MVP foundation stories that established customer data and auth patterns"
+    - "Story 1.1: Secure Customer Access Links"
+  technical_dependencies:
+    - "customer password hash storage"
+    - "customer credential verification logic"
+    - "customer session management"
+    - "customer route protection middleware"
+    - "customer login and logout routes"
+  downstream_dependencies:
+    - "Customer balance page"
+    - "Customer package history and delivery history"
+    - "Low-balance notifications"
+    - "Customer portal navigation and session-aware behavior"
+
+planned_files:
+  create: []
+  modify:
+    - "routes/customer.js"
+    - "models/customer-account.js"
+    - "middleware/auth.js"
+    - "views/shared/customer-login.html"
+    - "tests/customer-portal.test.js"
+    - "tests/e2e-owner-customer-flow.test.js"
+
+planned_routes:
+  new_routes:
+    - "GET /customer/login"
+    - "POST /customer/login"
+    - "POST /customer/logout"
+  affected_routes:
+    - "GET /customer/balance"
+    - "GET /customer/access/:token"
+    - "GET /customer/access/:token/package-history"
+    - "GET /customer/access/:token/delivery-history"
+  route_behavior_plan:
+    - "Authenticate the customer and start a customer session."
+    - "Redirect successful login to the balance page."
+    - "Destroy the customer session on logout."
+    - "Require customer session for customer-only routes."
+
+planned_database_changes:
+  schema_changes: []
+  behavior_changes:
+    - "Use the existing customer password hash field for authentication."
+    - "Use the existing customer identity record as the session source of truth."
+  explanation: >
+    Customer login does not require a new schema. The feature authenticates
+    against existing customer records and stores the session outside the
+    database in the existing session mechanism.
+
+planned_tests:
+  automated:
+    - name: "Customer login succeeds with valid credentials"
+      purpose: "Verify session creation and post-login redirect."
+    - name: "Customer login fails with invalid credentials"
+      purpose: "Verify generic rejection and no session creation."
+    - name: "Customer logout clears session"
+      purpose: "Verify the session is destroyed on logout."
+    - name: "Customer routes require customer session"
+      purpose: "Verify unauthorized access is blocked."
+    - name: "Admin session cannot access customer routes"
+      purpose: "Verify customer/admin session separation."
+  manual:
+    - "Log in as a customer and confirm the balance page opens."
+    - "Log out and confirm the customer session is cleared."
+  not_required:
+    - "Password reset flows."
+    - "Multi-factor authentication."
+    - "Customer portal content redesign."
+
+completion_criteria:
+  - "Customers can log in and reach the balance page."
+  - "Customers can log out and clear the session."
+  - "Customer-only routes stay protected."
+  - "Owner and customer sessions remain distinct."
+  - "Automated tests prove the login and logout flow works correctly."
+
+planning_explanation: |
+  Story 1.2 was planned as the authenticated session layer for the customer
+  portal. Story 1.1 already established a secure tokenized access path, but the
+  portal still needed a direct login/logout path so customers could access their
+  membership information through a normal authenticated session. That is what
+  makes the customer portal feel complete.
+
+  The scope is intentionally narrow. The story does not add password reset,
+  multi-factor authentication, or a new customer UI. It simply authenticates the
+  customer, starts a customer session, protects customer routes, and ends the
+  session on logout. That keeps the implementation aligned with the MVP and
+  avoids overengineering the first customer authentication layer.
+
+  The main technical risk is session boundary leakage. A customer session must
+  never behave like an owner session, and invalid sessions must not be allowed
+  to stay active. The plan addresses this by explicitly separating customer and
+  owner route protection and by requiring route redirects when sessions are
+  missing or expired. A second risk is leaking authentication detail in error
+  messages, so the plan keeps login failures generic.
+
+  The architecture remains consistent with the rest of the application: the
+  customer model owns password verification, the customer route owns login and
+  logout handling, and the middleware layer enforces customer-only access. That
+  keeps the implementation simple and testable.
+
+  The test plan centers on the behaviors that matter most: successful login,
+  failed login, logout, route protection, and session separation. Those tests
+  are the correct guardrails for a customer portal that uses session-based
+  authentication in addition to secure access links.

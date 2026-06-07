@@ -1,0 +1,187 @@
+phase: "Phase 1: Owner MVP"
+epic: "Epic 3: Customer Management"
+story:
+  id: "3.1"
+  title: "Implement Customer Account Management"
+output_type: "sprint-status.yaml"
+workflow_step: "Amelia: sprint-planning"
+status_snapshot: "Planned before development"
+final_delivery_status: "Implemented / Delivered"
+
+sprint_goal: >
+  Deliver the owner-facing customer account ledger so the coffee shop owner can
+  create customers, search them quickly, open a stable customer detail view,
+  and maintain the identity records that later package, delivery, and customer
+  portal workflows depend on.
+
+story_scope:
+  in_scope:
+    - "Create customer accounts from the owner/admin portal."
+    - "Require name, phone, login identifier, and password at creation time."
+    - "Allow email as an optional contact field."
+    - "Prevent duplicate phone numbers."
+    - "Prevent duplicate login identifiers."
+    - "Expose a searchable customer list by name, phone, and login identifier."
+    - "Provide a customer detail page with identity and current balance context."
+    - "Persist customer records in SQLite for later purchase and delivery workflows."
+  out_of_scope:
+    - "Customer self-service login."
+    - "Customer balance viewing portal."
+    - "Balance-access link generation."
+    - "Package purchase recording."
+    - "Delivery recording or voiding."
+    - "Reporting beyond the customer list and detail page."
+
+deliverables:
+  - "Customer list page under `/admin/customers`."
+  - "Customer creation form under `/admin/customers/new`."
+  - "Customer creation POST action with duplicate prevention."
+  - "Customer detail page under `/admin/customers/:customerId`."
+  - "Customer-account model functions for create, search, and lookup."
+  - "Owner-facing customer management tests covering duplicates and search."
+
+risks:
+  - id: "R1"
+    description: "Duplicate customer identities cause misattributed balances and history."
+    impact: >
+      Purchases or deliveries could be attached to the wrong customer, creating
+      ledger inaccuracies and owner confusion.
+    mitigation: >
+      Enforce unique phone numbers and unique login identifiers before insert.
+  - id: "R2"
+    description: "Customer records are incomplete or inconsistent."
+    impact: >
+      The owner would lack enough information to find or manage customers later.
+    mitigation: >
+      Require name, phone, login identifier, and password; keep email optional.
+  - id: "R3"
+    description: "Customer management is treated as a simple create form only."
+    impact: >
+      The owner would lose the ability to efficiently maintain accounts during
+      normal shop operations.
+    mitigation: >
+      Deliver list, search, create, and detail views as one capability.
+  - id: "R4"
+    description: "Customer account records are not suitable for future portal features."
+    impact: >
+      Later customer login and shared balance-link work would have no stable
+      identity foundation.
+    mitigation: >
+      Store login identifier, password hash, balance token, and current balance
+      from the start.
+
+dependencies:
+  prerequisite_stories:
+    - "Story 1.1: Build Local Express And SQLite Foundation"
+    - "Story 1.2: Establish Configuration, Data Access, And Test Foundation"
+    - "Story 2.1: Implement Owner Authentication And Route Protection"
+  technical_dependencies:
+    - "customer_accounts table and related schema fields"
+    - "models/customer-account.js"
+    - "password hashing helper"
+    - "owner-authenticated admin routes"
+    - "SQLite data-access helpers"
+  downstream_dependencies:
+    - "Story 3.2: Add Customer Search, Detail, And Validation Coverage"
+    - "Package purchase and delivery stories that require customer identity"
+    - "Customer portal and shared access features"
+
+planned_files:
+  create:
+    - "models/customer-account.js"
+  modify:
+    - "routes/admin.js"
+    - "database/schema.sql"
+    - "tests/phase1-owner.test.js"
+    - "tests/e2e-owner-customer-flow.test.js"
+
+planned_routes:
+  new_routes: []
+  affected_routes:
+    - "GET /admin/customers"
+    - "GET /admin/customers/new"
+    - "POST /admin/customers"
+    - "GET /admin/customers/:customerId"
+  route_behavior_plan:
+    - "Protect customer-management routes with owner authentication."
+    - "Search customers by name, phone, or login identifier."
+    - "Redirect successful create actions to the new customer detail page."
+    - "Reject duplicate customer phone numbers and login identifiers with clear messages."
+
+planned_database_changes:
+  schema_changes:
+    - "Customer records must support name, phone, email, login identifier, password hash, balance access token, and current balance."
+  data_changes:
+    - "No permanent seed data changes are required."
+  behavior_changes:
+    - "Customer creation writes a hashed password and initializes current balance at zero."
+    - "Customer search aggregates identity data for the list page."
+    - "Customer detail views read from the same SQLite customer records used later by packages and deliveries."
+  explanation: >
+    The schema already needs to support future customer portal and balance-link
+    work, so the planning assumption is that customer identity and access fields
+    are part of the foundational customer account record rather than separate
+    future add-ons.
+
+planned_tests:
+  automated:
+    - name: "Customer creation succeeds with required fields"
+      purpose: "Verify the owner can create a valid customer account."
+    - name: "Duplicate phone numbers are rejected"
+      purpose: "Verify ledger identity integrity."
+    - name: "Duplicate login identifiers are rejected"
+      purpose: "Verify the future customer access identity remains unique."
+    - name: "Customer search returns matching records"
+      purpose: "Verify owner usability of the customer list."
+    - name: "Customer detail route renders for an existing customer"
+      purpose: "Verify the owner can open a customer account snapshot."
+    - name: "Customer-management routes remain protected"
+      purpose: "Verify account data is owner-only."
+  manual:
+    - "Create a customer from the admin UI and confirm the redirect to the detail page."
+    - "Search for a customer by name, phone, and login identifier."
+  not_required:
+    - "Customer portal UI testing"
+    - "Package purchase flow testing"
+    - "Delivery flow testing"
+
+completion_criteria:
+  - "Owner can create customer accounts from the admin portal."
+  - "Duplicate phone numbers and login identifiers are blocked."
+  - "Customer list search works by the expected identity fields."
+  - "Customer detail page displays the operational identity data needed later."
+  - "Customer records are stored securely and are usable as the foundation for later ledger workflows."
+
+planning_explanation: |
+  Story 3.1 was planned as a core owner-led business capability, not as a
+  background data-entry task. The owner needs a trustworthy customer ledger
+  before package purchases and deliveries can be recorded safely. In a prepaid
+  membership model, the identity record is the source of truth that keeps later
+  cup movements attached to the correct person.
+
+  The planning approach therefore combines list, create, search, and detail into
+  one customer-management capability. That structure matches how the owner will
+  actually use the system: create a customer once, find them later quickly, and
+  open a detail page when they need to record a purchase, delivery, or balance
+  correction. If the story were planned as only a create form, the application
+  would not yet feel like a usable ledger.
+
+  A major planning concern was data integrity. Duplicate phone numbers or login
+  identifiers would undermine the value of the entire customer ledger and cause
+  serious operational confusion. The sprint plan therefore treats uniqueness as a
+  first-class requirement rather than an implementation detail. A second concern
+  was future-proofing: the customer record needed enough identity structure to
+  support later customer portal and shared balance-link work without requiring a
+  redesign of the underlying account model.
+
+  The architecture expected for this story is still intentionally simple. The
+  owner portal remains the only user interface in scope. The work lives primarily
+  in the customer-account model and admin route handlers, with SQLite providing
+  the persisted source of truth. That keeps the MVP low-maintenance and aligns
+  with the project’s local-run requirement.
+
+  The planned tests reflect the business risk. The most important questions are
+  whether a customer can be created correctly, whether duplicates are blocked,
+  whether the owner can search the list effectively, and whether protected
+  routes stay protected. Those checks are enough to prove that customer
+  management is ready to support the rest of Phase 1.

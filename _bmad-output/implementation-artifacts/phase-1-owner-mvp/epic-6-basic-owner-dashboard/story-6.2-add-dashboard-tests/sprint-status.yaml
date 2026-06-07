@@ -1,0 +1,187 @@
+phase: "Phase 1: Owner MVP"
+epic: "Epic 6: Basic Owner Dashboard"
+story:
+  id: "6.2"
+  title: "Add Dashboard Tests"
+output_type: "sprint-status.yaml"
+workflow_step: "Amelia: sprint-planning"
+status_snapshot: "Planned before development"
+final_delivery_status: "Implemented / Delivered"
+
+sprint_goal: >
+  Deliver regression coverage that protects the owner dashboard from changes
+  that could break its live metrics, low-balance customer list, recent activity
+  panel, or owner-only access control.
+
+story_scope:
+  in_scope:
+    - "Test the total customer count metric."
+    - "Test the total outstanding cups metric."
+    - "Test the recorded package revenue metric."
+    - "Test the total cups delivered metric."
+    - "Test the total bonus cups metric."
+    - "Test the low-balance customer panel."
+    - "Test the recent deliveries panel."
+    - "Test owner authentication on the dashboard."
+    - "Test dashboard accuracy after delivery voids."
+  out_of_scope:
+    - "New production dashboard features."
+    - "Analytics charts or exports."
+    - "Customer portal changes."
+    - "UI redesign of the dashboard."
+    - "Database schema changes."
+
+deliverables:
+  - "Dashboard metric regression tests."
+  - "Low-balance customer display tests."
+  - "Recent deliveries panel tests."
+  - "Owner authentication protection tests for the dashboard."
+  - "Void-aware dashboard verification tests."
+
+risks:
+  - id: "R1"
+    description: "Dashboard totals regress silently."
+    impact: >
+      The owner could rely on incorrect numbers.
+    mitigation: >
+      Test each metric directly against seeded ledger data.
+  - id: "R2"
+    description: "Voided deliveries are counted incorrectly."
+    impact: >
+      The dashboard would overstate actual delivery activity.
+    mitigation: >
+      Add a test that voids a delivery and verifies the totals exclude it.
+  - id: "R3"
+    description: "The dashboard becomes publicly accessible."
+    impact: >
+      Internal business data could be exposed.
+    mitigation: >
+      Verify that the route remains owner-authenticated.
+  - id: "R4"
+    description: "Recent activity links break."
+    impact: >
+      The dashboard loses navigation value.
+    mitigation: >
+      Assert that recent deliveries link back to the customer record.
+  - id: "R5"
+    description: "The suite becomes too superficial."
+    impact: >
+      Page rendering might pass while the numbers are wrong.
+    mitigation: >
+      Test business totals and post-void behavior, not just titles and labels.
+
+dependencies:
+  prerequisite_stories:
+    - "Story 1.1: Build Local Express And SQLite Foundation"
+    - "Story 1.2: Establish Configuration, Data Access, And Test Foundation"
+    - "Story 2.1: Implement Owner Authentication And Route Protection"
+    - "Story 3.1: Implement Customer Account Management"
+    - "Story 3.2: Add Customer Search, Detail, And Validation Coverage"
+    - "Story 4.1: Implement Package Purchase, Fixed Pricing, And Bonus Crediting"
+    - "Story 4.2: Add Package Purchase History And Tests"
+    - "Story 5.1: Implement Multi-Cup Delivery And Balance Protection"
+    - "Story 5.2: Implement Void Delivery And Delivery History"
+    - "Story 5.3: Add Delivery Tests"
+    - "Story 6.1: Implement Owner Dashboard Metrics And Recent Activity"
+  technical_dependencies:
+    - "models/dashboard.js"
+    - "routes/admin.js"
+    - "tests/phase1-owner.test.js"
+    - "tests/e2e-owner-customer-flow.test.js"
+    - "SQLite test bootstrap helpers"
+  downstream_dependencies:
+    - "Final QA summary"
+    - "Future dashboard or reporting enhancements"
+    - "Other owner summary views"
+
+planned_files:
+  create: []
+  modify:
+    - "tests/phase1-owner.test.js"
+    - "tests/e2e-owner-customer-flow.test.js"
+
+planned_routes:
+  new_routes: []
+  affected_routes:
+    - "GET /admin/dashboard"
+    - "GET /admin/customers/:customerId"
+    - "GET /admin/deliveries"
+  route_behavior_plan:
+    - "Verify the dashboard remains owner-only."
+    - "Verify dashboard metrics match live ledger state."
+    - "Verify recent deliveries and low-balance customers render correctly."
+
+planned_database_changes:
+  schema_changes: []
+  behavior_changes:
+    - "Use the existing ledger tables as the source of truth in tests."
+    - "Verify dashboard totals remain correct when deliveries are voided."
+  explanation: >
+    This story does not change schema. It validates that the dashboard's live
+    aggregation continues to reflect the current state of the existing tables.
+
+planned_tests:
+  automated:
+    - name: "Dashboard shows total customers"
+      purpose: "Verify the customer count metric."
+    - name: "Dashboard shows total outstanding cups"
+      purpose: "Verify the balance total metric."
+    - name: "Dashboard shows recorded package revenue"
+      purpose: "Verify the revenue summary."
+    - name: "Dashboard shows total cups delivered"
+      purpose: "Verify the delivery total metric."
+    - name: "Dashboard shows bonus cups"
+      purpose: "Verify the bonus cup total metric."
+    - name: "Dashboard lists low-balance customers"
+      purpose: "Verify the operational alert panel."
+    - name: "Dashboard shows recent deliveries"
+      purpose: "Verify the activity panel and customer links."
+    - name: "Dashboard remains owner-protected"
+      purpose: "Verify the admin-only access boundary."
+    - name: "Dashboard remains correct after voided deliveries"
+      purpose: "Verify the void-aware totals remain accurate."
+  manual:
+    - "Open the dashboard as the owner and confirm the summary cards and panels render."
+    - "Void a delivery in the ledger and confirm the dashboard totals reflect the change."
+  not_required:
+    - "Analytics charts or exports."
+    - "New production dashboard features."
+    - "Database schema updates."
+
+completion_criteria:
+  - "The dashboard totals are covered by automated tests."
+  - "Low-balance and recent activity panels are covered by automated tests."
+  - "The dashboard remains owner-protected in the test suite."
+  - "Voided deliveries are proven not to inflate the dashboard."
+  - "The test suite passes against the delivered application."
+
+planning_explanation: |
+  Story 6.2 was planned as the safety net for the owner dashboard. Story 6.1
+  already turned the ledger into a concise summary view. The remaining risk was
+  regressions: a future change could alter the dashboard totals, expose the
+  route, or stop showing the right recent activity. The purpose of this story is
+  to lock the behavior down with tests.
+
+  The scope is intentionally focused on the metrics and panels that matter to
+  the owner. This is not a new dashboard feature story, and it does not add new
+  schema or a new route. It simply verifies that the existing dashboard remains
+  trustworthy. That keeps the implementation small and high-value.
+
+  The main technical risk is that the dashboard is only as good as the ledger
+  data behind it. If voided deliveries are counted incorrectly, or if the
+  queries drift from the live tables, the owner will see misleading numbers.
+  The test plan therefore centers on direct metric assertions, a void-aware
+  scenario, and route protection checks. That is the right shape for a summary
+  page backed by transactional data.
+
+  The dashboard test story also protects the UI. The low-balance customer table
+  and recent deliveries panel are part of the owner workflow, so the plan
+  explicitly verifies those panels rather than only the headline numbers. The
+  owner should be able to trust both the totals and the operational cues.
+
+  The architecture remains the same: the dashboard reads from live ledger data
+  and the tests exercise the real route and application context. This is
+  appropriate because the dashboard is a read-only view of current state, not a
+  separate reporting product. The tests need to prove that the live summary is
+  still accurate after transaction-heavy features such as deliveries and voids
+  are used.

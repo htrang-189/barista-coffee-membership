@@ -1,0 +1,135 @@
+phase: "Phase 1: Owner MVP"
+epic: "Epic 1: Application Foundation"
+story:
+  id: "1.5"
+  title: "Implement Package Credit Calculation"
+output_type: "sprint-status.yaml"
+workflow_step: "Amelia: sprint-planning"
+status_snapshot: "Planned before development"
+final_delivery_status: "Implemented / Delivered"
+
+sprint_goal: >
+  Implement the centralized package credit calculation so package purchase
+  workflows can consistently convert purchased cup packages into credited cups
+  using the shop's bonus rules: 10 -> 11, 20 -> 22, and 30 -> 33.
+
+story_scope:
+  in_scope:
+    - "Create a reusable package credit calculation function."
+    - "Support 10 purchased cups crediting 11 total cups."
+    - "Support 20 purchased cups crediting 22 total cups."
+    - "Support 30 purchased cups crediting 33 total cups."
+    - "Return package size, bonus cups, and total cups added."
+    - "Reject unsupported package sizes."
+    - "Keep the calculation side-effect free."
+    - "Make the function importable by package purchase logic and tests."
+  out_of_scope:
+    - "Package purchase form UI."
+    - "Package purchase database insert."
+    - "Customer balance update transaction."
+    - "Fixed VND price calculation."
+    - "Dashboard bonus metrics."
+    - "Customer portal package history."
+    - "Shared balance-link package history."
+    - "Any route behavior."
+
+deliverables:
+  - "models/cup-balance.js"
+  - "calculatePackageCredits(packageSize)"
+  - "Structured result containing packageSize, bonusCups, and totalCupsAdded."
+  - "Invalid package size error handling."
+
+risks:
+  - id: "R1"
+    description: "Package credit rules are duplicated in routes, UI, or tests."
+    impact: "The app could preview one value and save another."
+    mitigation: "Create one server-side model function as the source of truth."
+  - id: "R2"
+    description: "Unsupported package sizes are accepted."
+    impact: "Invalid packages could later update balances."
+    mitigation: "Reject any package size other than 10, 20, or 30."
+  - id: "R3"
+    description: "Old 30-cup no-bonus rule persists."
+    impact: "30-cup purchases would credit 30 instead of 33 cups."
+    mitigation: "Plan and test the delivered rule: 30 -> 33."
+  - id: "R4"
+    description: "Calculation is coupled to database or Express code."
+    impact: "The rule becomes harder to test and reuse."
+    mitigation: "Implement as a pure model function with no side effects."
+
+dependencies:
+  prerequisite_stories:
+    - "Story 1.1: Express And SQLite Application Foundation"
+  supporting_context:
+    - "Application model folder exists."
+    - "Package bonus business rule is confirmed."
+  downstream_dependencies:
+    - "Package purchase workflow uses this function."
+    - "Balance update transactions use values derived from this function."
+    - "Dashboard bonus metrics reflect stored values derived from this function."
+    - "Customer and shared-link histories display values derived from this function."
+    - "Foundation tests validate this function."
+
+planned_files:
+  create:
+    - "models/cup-balance.js"
+  modify: []
+  referenced_later:
+    - "models/package-purchase.js"
+    - "tests/customer-balance.test.js"
+    - "public/js/admin.js"
+
+planned_routes:
+  new_routes: []
+  affected_routes: []
+  explanation: >
+    Story 1.5 is pure business-rule model logic. No HTTP route should be added
+    or changed during this story.
+
+planned_database_changes:
+  schema_changes: []
+  data_changes: []
+  explanation: >
+    Story 1.5 performs no database work. Later package purchase stories store
+    bonus_cups and total_cups_added values calculated from this rule.
+
+planned_tests:
+  automated:
+    - "10 cup package credits 11 total cups."
+    - "20 cup package credits 22 total cups."
+    - "30 cup package credits 33 total cups."
+    - "Invalid package size is rejected."
+  manual: []
+  not_required:
+    - "Browser testing."
+    - "Database setup."
+    - "Route workflow testing."
+
+completion_criteria:
+  - "models/cup-balance.js exists."
+  - "calculatePackageCredits is implemented and exported."
+  - "Supported package sizes return correct credited totals."
+  - "Unsupported package sizes throw a clear error."
+  - "The function has no database side effects."
+  - "The function can be tested directly."
+
+planning_explanation: |
+  Story 1.5 was planned as a small but high-impact business-rule foundation
+  story. The owner-facing package purchase workflow cannot safely update a
+  customer balance until the credited-cup rule is known and centralized.
+
+  The planned implementation deliberately avoids routes, database writes, and UI
+  behavior. That separation matters because package credit calculation is a
+  reusable rule, not a form submission or persistence operation. Keeping it as a
+  pure model function makes the rule easy to test and reuse.
+
+  The most important planning decision was to treat the server-side function as
+  the source of truth. UI previews can display the same values, but they should
+  not become authoritative. The server-side package purchase model later uses
+  this function to calculate bonus cups and total credited cups before updating
+  customer balances.
+
+  The main risk was stale package policy, especially the 30-cup package. The
+  final delivered rule credits 33 cups for a 30-cup purchase. The sprint plan
+  therefore includes direct automated tests for 10, 20, 30, and invalid package
+  sizes.

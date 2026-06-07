@@ -1,0 +1,188 @@
+phase: "Phase 1: Owner MVP"
+epic: "Epic 6: Basic Owner Dashboard"
+story:
+  id: "6.1"
+  title: "Implement Owner Dashboard Metrics And Recent Activity"
+output_type: "sprint-status.yaml"
+workflow_step: "Amelia: sprint-planning"
+status_snapshot: "Planned before development"
+final_delivery_status: "Implemented / Delivered"
+
+sprint_goal: >
+  Deliver a compact owner dashboard that summarizes the membership business
+  with current ledger metrics, low-balance customers, and recent delivery
+  activity so the owner can monitor operations at a glance.
+
+story_scope:
+  in_scope:
+    - "Show total customer count."
+    - "Show total outstanding cups across all customers."
+    - "Show recorded package revenue in VND."
+    - "Show total cups delivered."
+    - "Show total bonus cups granted."
+    - "List low-balance customers."
+    - "Show recent delivery activity."
+    - "Link recent activity back to the relevant customer record."
+    - "Keep the dashboard owner-protected."
+  out_of_scope:
+    - "Deep analytics or historical reporting."
+    - "Customer portal changes."
+    - "Revenue forecasting."
+    - "Interactive charts or exports."
+    - "Editing ledger records from the dashboard."
+
+deliverables:
+  - "Owner dashboard metrics summary cards."
+  - "Low-balance customer table."
+  - "Recent deliveries activity list."
+  - "Owner-authenticated dashboard route."
+  - "Automated tests validating dashboard totals and content."
+
+risks:
+  - id: "R1"
+    description: "Dashboard metrics are inaccurate."
+    impact: >
+      The owner could make incorrect operational decisions based on misleading totals.
+    mitigation: >
+      Calculate metrics directly from the ledger tables and verify them in tests.
+  - id: "R2"
+    description: "Voided deliveries distort the dashboard."
+    impact: >
+      Delivered cup counts and recent activity would overstate real usage.
+    mitigation: >
+      Exclude voided deliveries from active totals and recent activity summaries.
+  - id: "R3"
+    description: "The dashboard becomes too busy to be useful."
+    impact: >
+      The owner loses the quick-glance value of the page.
+    mitigation: >
+      Keep the dashboard limited to a small set of high-value metrics and two panels.
+  - id: "R4"
+    description: "Low-balance customers are not surfaced clearly."
+    impact: >
+      The owner misses an important operational cue.
+    mitigation: >
+      Include a dedicated low-balance customer section sorted by balance.
+  - id: "R5"
+    description: "Dashboard data becomes stale."
+    impact: >
+      The owner may see outdated business information.
+    mitigation: >
+      Compute metrics on each request from the live database.
+
+dependencies:
+  prerequisite_stories:
+    - "Story 1.1: Build Local Express And SQLite Foundation"
+    - "Story 1.2: Establish Configuration, Data Access, And Test Foundation"
+    - "Story 2.1: Implement Owner Authentication And Route Protection"
+    - "Story 3.1: Implement Customer Account Management"
+    - "Story 3.2: Add Customer Search, Detail, And Validation Coverage"
+    - "Story 4.1: Implement Package Purchase, Fixed Pricing, And Bonus Crediting"
+    - "Story 4.2: Add Package Purchase History And Tests"
+    - "Story 5.1: Implement Multi-Cup Delivery And Balance Protection"
+    - "Story 5.2: Implement Void Delivery And Delivery History"
+    - "Story 5.3: Add Delivery Tests"
+  technical_dependencies:
+    - "models/dashboard.js"
+    - "customer_accounts.current_balance"
+    - "package_purchases"
+    - "delivery_history"
+    - "admin-authenticated dashboard route"
+  downstream_dependencies:
+    - "Dashboard test coverage"
+    - "Future reporting or summary views"
+    - "Customer-facing low-balance narratives"
+
+planned_files:
+  create:
+    - "models/dashboard.js"
+  modify:
+    - "routes/admin.js"
+    - "tests/phase1-owner.test.js"
+    - "tests/e2e-owner-customer-flow.test.js"
+
+planned_routes:
+  new_routes:
+    - "GET /admin/dashboard"
+  affected_routes:
+    - "GET /admin/customers/:customerId"
+    - "GET /admin/deliveries"
+  route_behavior_plan:
+    - "Compute dashboard metrics directly from live ledger tables."
+    - "Render low-balance customers and recent delivery activity."
+    - "Keep the dashboard protected by owner authentication."
+
+planned_database_changes:
+  schema_changes: []
+  behavior_changes:
+    - "Aggregate metrics from customer_accounts, package_purchases, and delivery_history."
+    - "Exclude voided deliveries from active delivery totals."
+    - "Surface low-balance customers from the live ledger."
+  explanation: >
+    This story does not add new schema. It consumes the existing ledger tables to
+    present a live operational summary to the owner.
+
+planned_tests:
+  automated:
+    - name: "Dashboard shows total customers"
+      purpose: "Verify the customer count metric."
+    - name: "Dashboard shows total outstanding cups"
+      purpose: "Verify the balance aggregation metric."
+    - name: "Dashboard shows recorded package revenue"
+      purpose: "Verify the revenue summary in VND."
+    - name: "Dashboard shows total cups delivered"
+      purpose: "Verify delivery totals are counted correctly."
+    - name: "Dashboard shows bonus cups"
+      purpose: "Verify bonus cup aggregation."
+    - name: "Dashboard lists low-balance customers"
+      purpose: "Verify the operational alert panel."
+    - name: "Dashboard shows recent deliveries"
+      purpose: "Verify the activity list and customer links."
+    - name: "Dashboard remains owner-protected"
+      purpose: "Verify the route is not publicly accessible."
+  manual:
+    - "Open the dashboard as the owner and confirm the summary cards and recent activity panels render."
+    - "Verify that clicking customer links from recent activity opens the correct customer record."
+  not_required:
+    - "Analytics charts or exports."
+    - "Editing ledger data from the dashboard."
+    - "Customer portal dashboard views."
+
+completion_criteria:
+  - "The owner can see a concise summary of the membership business."
+  - "The dashboard metrics match the underlying ledger."
+  - "Low-balance customers are easy to identify."
+  - "Recent deliveries are easy to review and open."
+  - "Automated tests verify the dashboard totals and content."
+
+planning_explanation: |
+  Story 6.1 was planned as the final summary layer for the owner MVP. After the
+  application could sell packages, track deliveries, handle voids, and expose
+  customer access, the owner needed a simple way to understand the business
+  without opening individual customer records. The dashboard solves that by
+  surfacing the most important ledger totals and recent activity in one place.
+
+  The plan is intentionally narrow. This is not a reporting system and not a
+  BI dashboard. The product only needs a handful of operational metrics:
+  customer count, outstanding cups, recorded revenue, cups delivered, bonus
+  cups, low-balance customers, and recent deliveries. Keeping the scope small
+  makes the dashboard readable and keeps the implementation aligned with the
+  owner MVP.
+
+  The key architectural choice is to calculate everything directly from the
+  existing ledger tables. That means the dashboard remains a live summary of the
+  current system state rather than a cached or duplicated data source. This is
+  important because the app already has voiding and balance changes; the dashboard
+  must reflect those changes accurately in real time.
+
+  The biggest risk is misleading totals. A dashboard is only useful if the
+  numbers can be trusted. That is why the plan explicitly excludes voided
+  deliveries from active totals and why the test plan focuses on verifying the
+  ledger-derived counts. Another risk is that the page could become too busy, so
+  the scope deliberately stops at a small set of summary cards and two review
+  panels. That keeps the page practical for daily shop use.
+
+  The route and test plan are both straightforward. The dashboard lives under
+  the owner-authenticated admin area, and the tests should verify the totals and
+  key rendered content using real database state. That approach keeps the story
+  grounded in the actual ledger instead of a synthetic dashboard-only dataset.
